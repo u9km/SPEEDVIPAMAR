@@ -1,41 +1,40 @@
-name: Build_Security_Dylib
+name: Build Tweak
 
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
+on: [push]
 
 jobs:
   build:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Setup Theos
+      - name: Install Theos
         run: |
           bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
-          echo "THEOS=/Users/runner/theos" >> $GITHUB_ENV
+          echo "THEOS=~/theos" >> $GITHUB_ENV
 
-      - name: Setup SDK
+      - name: Download iOS SDKs (Fix Error)
         run: |
-          mkdir -p /Users/runner/theos/sdks
-          git clone --depth 1 https://github.com/theos/sdks.git /tmp/sdks
-          cp -r /tmp/sdks/iPhoneOS14.5.sdk /Users/runner/theos/sdks/
+          # هذه الخطوة تحل المشكلة بتحميل الـ SDK يدوياً
+          git clone --depth 1 https://github.com/theos/sdks.git ~/theos/sdks
+          # مسح المجلدات الفارغة لتجنب الأخطاء
+          rm -rf ~/theos/sdks/.git
 
-      - name: Build Dylib
+      - name: Download fishhook (Required)
         run: |
-          export THEOS=/Users/runner/theos
-          make clean
-          make FINALPACKAGE=1
-          # أمر إضافي للتأكد من مكان الملف (سيظهر في السجلات)
-          find . -name "*.dylib"
+          # تحميل ملفات fishhook المطلوبة للكود الخاص بك
+          curl -o fishhook.c https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.c
+          curl -o fishhook.h https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.h
+
+      - name: Build Tweak
+        run: |
+          # بناء الملف وتجاهل الأخطاء البسيطة
+          make package FINALPACKAGE=1
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: SecurityShield_Dylib
-          # مسار مرن للبحث عن الملف في مجلد obj
-          path: "./.theos/obj/*.dylib"
-          if-no-files-found: error
+          name: AntiCheatShield
+          path: packages/*.deb
