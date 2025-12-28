@@ -1,4 +1,4 @@
-name: Build_Dylib
+name: Build_Security_Dylib
 
 on: [push, pull_request, workflow_dispatch]
 
@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Setup Theos
@@ -19,17 +19,17 @@ jobs:
           curl -LO https://github.com/theos/sdks/raw/master/iPhoneOS14.5.sdk.tar.xz
           tar -xf iPhoneOS14.5.sdk.tar.xz -C ~/theos/sdks
 
-      - name: Prepare and Build
+      - name: Fix Filenames and Build
         run: |
-          # هذا السطر يبحث عن أي ملف ينتهي بـ .x ويحوله لـ Tweak.x ليتوافق مع الـ Makefile
-          find . -name "*.x" -exec mv {} Tweak.x \;
+          # البحث عن أي ملف .x وتحويله لـ Tweak.x حتى لو كان فيه مسافات
+          find . -name "*.x" -exec mv "{}" Tweak.x \;
           
           export THEOS=~/theos
           make clean
           make FINALPACKAGE=1
 
-      - name: Upload Artifact
+      - name: Upload Dylib
         uses: actions/upload-artifact@v3
         with:
-          name: Shield_Dylib
-          path: .theos/obj/main/*.dylib
+          name: SecurityShield_Final
+          path: packages/*.dylib || .theos/obj/main/*.dylib || .theos/obj/*.dylib
