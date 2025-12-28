@@ -1,47 +1,35 @@
-name: Build SecurityShield Dylib
+name: Build_Dylib
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch: # يتيح لك تشغيل البناء يدوياً
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
     runs-on: macos-latest
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v3
-        with:
-          submodules: recursive
 
       - name: Setup Theos
         run: |
           bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
           echo "THEOS=~/theos" >> $GITHUB_ENV
-          echo "~/theos/bin" >> $GITHUB_PATH
 
       - name: Setup SDK
         run: |
-          # تحميل الـ SDK الخاص بـ iOS (نسخة 14.5 كافية ومستقرة)
           curl -LO https://github.com/theos/sdks/raw/master/iPhoneOS14.5.sdk.tar.xz
           tar -xf iPhoneOS14.5.sdk.tar.xz -C ~/theos/sdks
-          rm iPhoneOS14.5.sdk.tar.xz
 
-      - name: Build the Project
+      - name: Prepare and Build
         run: |
-          # التأكد من استخدام ملف Tweak (4).x وإعادة تسميته برمجياً ليتوافق مع الـ Makefile
-          if [ -f "Tweak (4).x" ]; then mv "Tweak (4).x" Tweak.x; fi
+          # هذا السطر يبحث عن أي ملف ينتهي بـ .x ويحوله لـ Tweak.x ليتوافق مع الـ Makefile
+          find . -name "*.x" -exec mv {} Tweak.x \;
           
           export THEOS=~/theos
           make clean
           make FINALPACKAGE=1
-          
-      - name: Upload Dylib Artifact
+
+      - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: SecurityShield-Dylib
-          path: .theos/obj/debug/*.dylib # أو المسار الذي يحدده الـ Makefile الخاص بك
-          
+          name: Shield_Dylib
+          path: .theos/obj/main/*.dylib
