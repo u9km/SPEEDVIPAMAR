@@ -19,25 +19,28 @@ jobs:
           bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
           echo "THEOS=~/theos" >> $GITHUB_ENV
 
-      - name: Download iOS SDKs (Fix Error 1)
+      - name: Download iOS SDKs (Force Clean Install)
         run: |
-          # التحميل اليدوي للـ SDKs لتجاوز خطأ API GitHub
+          # 1. مسح المجلد الموجود مسبقاً لتجنب خطأ "already exists"
+          rm -rf ~/theos/sdks
+          
+          # 2. تحميل الـ SDKs من جديد بشكل نظيف
           git clone --depth 1 https://github.com/theos/sdks.git ~/theos/sdks
+          
+          # 3. تنظيف ملفات git لتقليل الحجم
           rm -rf ~/theos/sdks/.git
 
       - name: Download fishhook (Required)
         run: |
-          # تحميل ملفات fishhook الضرورية للكود
           curl -o fishhook.c https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.c
           curl -o fishhook.h https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.h
 
       - name: Build Tweak
         run: |
-          # بناء الحزمة
           make package FINALPACKAGE=1
 
-      - name: Upload Artifact (Fix Error 2)
-        uses: actions/upload-artifact@v4  # تم التحديث إلى v4
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: AntiCheatShield
           path: packages/*.deb
