@@ -9,7 +9,7 @@ include $(THEOS)/makefiles/common.mk
 
 LIBRARY_NAME = SecurityShield
 
-# هنا نثبت الاسم على Tweak.x وسيقوم الـ YAML بالتحويل تلقائياً
+# هنا نستخدم Tweak.x كاسم موحد
 SecurityShield_FILES = Tweak.x fishhook.c
 SecurityShield_CFLAGS = -fobjc-arc -O3 -DNO_JAILBREAK=1
 SecurityShield_LDFLAGS = -Wl,-undefined,dynamic_lookup
