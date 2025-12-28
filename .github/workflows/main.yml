@@ -14,29 +14,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Theos
+      - name: Install Theos (Manual Clone)
         run: |
-          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+          # التثبيت اليدوي بدلاً من السكربت التلقائي لتجنب أخطاء API
+          git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
 
-      - name: Download iOS SDKs (Force Clean Install)
+      - name: Download iOS SDKs
         run: |
-          # 1. مسح المجلد الموجود مسبقاً لتجنب خطأ "already exists"
-          rm -rf ~/theos/sdks
-          
-          # 2. تحميل الـ SDKs من جديد بشكل نظيف
+          # تحميل الـ SDKs يدوياً
           git clone --depth 1 https://github.com/theos/sdks.git ~/theos/sdks
-          
-          # 3. تنظيف ملفات git لتقليل الحجم
           rm -rf ~/theos/sdks/.git
 
-      - name: Download fishhook (Required)
+      - name: Download fishhook
         run: |
           curl -o fishhook.c https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.c
           curl -o fishhook.h https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.h
 
       - name: Build Tweak
         run: |
+          # تجاهل التحذيرات وبناء الحزمة
           make package FINALPACKAGE=1
 
       - name: Upload Artifact
