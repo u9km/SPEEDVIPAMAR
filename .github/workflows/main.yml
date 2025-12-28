@@ -18,22 +18,24 @@ jobs:
           bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
           echo "THEOS=/Users/runner/theos" >> $GITHUB_ENV
 
-      - name: Setup SDK (Fast & Secure)
+      - name: Setup SDK
         run: |
-          # تحميل SDK من مصدر موثوق وتجاوز أخطاء tar
           mkdir -p /Users/runner/theos/sdks
           git clone --depth 1 https://github.com/theos/sdks.git /tmp/sdks
           cp -r /tmp/sdks/iPhoneOS14.5.sdk /Users/runner/theos/sdks/
-          ls /Users/runner/theos/sdks/
 
       - name: Build Dylib
         run: |
           export THEOS=/Users/runner/theos
           make clean
           make FINALPACKAGE=1
-          
+          # أمر إضافي للتأكد من مكان الملف (سيظهر في السجلات)
+          find . -name "*.dylib"
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: SecurityShield_Dylib
-          path: .theos/obj/main/*.dylib
+          # مسار مرن للبحث عن الملف في مجلد obj
+          path: "./.theos/obj/*.dylib"
+          if-no-files-found: error
