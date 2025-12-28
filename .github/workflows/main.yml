@@ -12,30 +12,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1. تثبيت Theos يدوياً (أكثر استقراراً)
+      # 1. تثبيت Theos الأساسي
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
 
-      # 2. تثبيت SDKs يدوياً (لتفادي أخطاء السيرفر)
+      # 2. تثبيت SDKs (تم إضافة سطر الحذف لحل المشكلة)
       - name: Setup SDKs
         run: |
+          rm -rf ~/theos/sdks  # <-- هذا السطر يحل مشكلة المجلد الموجود مسبقاً
           git clone --depth 1 https://github.com/theos/sdks.git ~/theos/sdks
           rm -rf ~/theos/sdks/.git
 
-      # 3. تحميل fishhook
+      # 3. تحميل مكتبة fishhook
       - name: Download Dependencies
         run: |
           curl -o fishhook.c https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.c
           curl -o fishhook.h https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.h
 
-      # 4. بناء الأداة (لن يظهر خطأ plist إذا قمت بالخطوة 1)
+      # 4. بناء الأداة
       - name: Build Package
         run: |
           make package FINALPACKAGE=1
 
-      # 5. رفع الملف الناتج (محدث للإصدار v4)
+      # 5. رفع الملف الناتج
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
