@@ -1,7 +1,7 @@
- #import <Foundation/Foundation.h>
-    #import <mach-o/dyld.h>
-    #import <dlfcn.h>
-    #import "fishhook.h"
+#import <Foundation/Foundation.h>
+#import <mach-o/dyld.h>
+#import <dlfcn.h>
+#import "fishhook.h"
     
     // ===== قائمة السترنقات الكاملة (جميعها مدمجة هنا) =====
     static const char *blockedStrings[] = {
