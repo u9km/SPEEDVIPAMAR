@@ -1,12 +1,12 @@
-name: Build_Security_Dylib
+name: Build_Dylib
 
-on: [push, pull_request, workflow_dispatch]
+on: [push, workflow_dispatch]
 
 jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v3
 
       - name: Setup Theos
@@ -19,14 +19,14 @@ jobs:
           curl -LO https://github.com/theos/sdks/raw/master/iPhoneOS14.5.sdk.tar.xz
           tar -xf iPhoneOS14.5.sdk.tar.xz -C ~/theos/sdks
 
-      - name: Build Dylib
+      - name: Build
         run: |
           export THEOS=~/theos
           make clean
           make FINALPACKAGE=1
 
-      - name: Upload Artifact
+      - name: Upload
         uses: actions/upload-artifact@v3
         with:
-          name: MySecurityDylib
+          name: SecurityShield_Dylib
           path: .theos/obj/main/*.dylib
