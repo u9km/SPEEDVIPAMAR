@@ -7,12 +7,11 @@ GO_EASY_ON_ME = 1
 
 include $(THEOS)/makefiles/common.mk
 
-LIBRARY_NAME = SecurityShieldVIP
+LIBRARY_NAME = SecurityShield
 
-# ربط ملفات المشروع
-SecurityShieldVIP_FILES = Tweak.x fishhook.c
-SecurityShieldVIP_CFLAGS = -fobjc-arc -O3 -DNO_JAILBREAK=1
-SecurityShieldVIP_LDFLAGS = -Wl,-undefined,dynamic_lookup
-SecurityShieldVIP_FRAMEWORKS = Foundation UIKit
+# هنا نستخدم Tweak.x كاسم افتراضي
+SecurityShield_FILES = Tweak.x fishhook.c
+SecurityShield_CFLAGS = -fobjc-arc -O3 -DNO_JAILBREAK=1
+SecurityShield_LDFLAGS = -Wl,-undefined,dynamic_lookup
 
 include $(THEOS_MAKE_PATH)/library.mk
