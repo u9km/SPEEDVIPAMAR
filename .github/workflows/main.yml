@@ -3,8 +3,6 @@ name: Build Tweak
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -14,30 +12,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Theos (Manual Clone)
+      # 1. تثبيت Theos يدوياً (أكثر استقراراً)
+      - name: Setup Theos
         run: |
-          # التثبيت اليدوي بدلاً من السكربت التلقائي لتجنب أخطاء API
           git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
 
-      - name: Download iOS SDKs
+      # 2. تثبيت SDKs يدوياً (لتفادي أخطاء السيرفر)
+      - name: Setup SDKs
         run: |
-          # تحميل الـ SDKs يدوياً
           git clone --depth 1 https://github.com/theos/sdks.git ~/theos/sdks
           rm -rf ~/theos/sdks/.git
 
-      - name: Download fishhook
+      # 3. تحميل fishhook
+      - name: Download Dependencies
         run: |
           curl -o fishhook.c https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.c
           curl -o fishhook.h https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.h
 
-      - name: Build Tweak
+      # 4. بناء الأداة (لن يظهر خطأ plist إذا قمت بالخطوة 1)
+      - name: Build Package
         run: |
-          # تجاهل التحذيرات وبناء الحزمة
           make package FINALPACKAGE=1
 
+      # 5. رفع الملف الناتج (محدث للإصدار v4)
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: AntiCheatShield
+          name: SecurityShield
           path: packages/*.deb
