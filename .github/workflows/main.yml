@@ -1,40 +1,43 @@
 name: Build Tweak
 
-on: [push]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Theos
         run: |
           bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
           echo "THEOS=~/theos" >> $GITHUB_ENV
 
-      - name: Download iOS SDKs (Fix Error)
+      - name: Download iOS SDKs (Fix Error 1)
         run: |
-          # هذه الخطوة تحل المشكلة بتحميل الـ SDK يدوياً
+          # التحميل اليدوي للـ SDKs لتجاوز خطأ API GitHub
           git clone --depth 1 https://github.com/theos/sdks.git ~/theos/sdks
-          # مسح المجلدات الفارغة لتجنب الأخطاء
           rm -rf ~/theos/sdks/.git
 
       - name: Download fishhook (Required)
         run: |
-          # تحميل ملفات fishhook المطلوبة للكود الخاص بك
+          # تحميل ملفات fishhook الضرورية للكود
           curl -o fishhook.c https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.c
           curl -o fishhook.h https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.h
 
       - name: Build Tweak
         run: |
-          # بناء الملف وتجاهل الأخطاء البسيطة
+          # بناء الحزمة
           make package FINALPACKAGE=1
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload Artifact (Fix Error 2)
+        uses: actions/upload-artifact@v4  # تم التحديث إلى v4
         with:
           name: AntiCheatShield
           path: packages/*.deb
