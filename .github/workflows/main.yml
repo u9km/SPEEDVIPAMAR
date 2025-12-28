@@ -13,25 +13,22 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Theos
-        run: |
-          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
-          echo "THEOS=/Users/runner/theos" >> $GITHUB_ENV
-
-      - name: Setup SDK (The Professional Way)
-        run: |
-          # هذه الأداة تجلب الـ SDK بشكل آمن ومباشر من مستودعات ذايوس الرسمية
-          git clone --quiet https://github.com/theos/sdks.git $THEOS/sdks
+      - name: Setup Theos and SDK
+        uses: theos/setup-theos@v1
+        with:
+          # هذه الأداة ستجلب الـ SDK الصحيح تلقائياً
+          sdk-version: '14.5'
 
       - name: Build Dylib
         run: |
-          export THEOS=/Users/runner/theos
-          # التنظيف وبدء البناء مع تحديد الـ SDK الموجود فعلياً
+          # تنظيف وبناء المشروع باستخدام الـ Theos الذي تم إعداده
           make clean
-          make FINALPACKAGE=1 SDKVERSION=14.5
-          
+          make FINALPACKAGE=1
+        env:
+          THEOS: ${{ github.workspace }}/theos
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SecurityShield_Dylib
+          name: SecurityShield_Product
           path: .theos/obj/main/*.dylib
