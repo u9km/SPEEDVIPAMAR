@@ -20,11 +20,12 @@ jobs:
 
       - name: Setup SDK
         run: |
-          # تحميل الـ SDK مباشرة وفكه بطريقة أكثر استقراراً
           mkdir -p /Users/runner/theos/sdks
-          curl -L https://github.com/theos/sdks/raw/master/iPhoneOS14.5.sdk.tar.xz -o $THEOS/sdks/sdk.tar.xz
-          tar -xf $THEOS/sdks/sdk.tar.xz -C /Users/runner/theos/sdks
-          rm $THEOS/sdks/sdk.tar.xz
+          # استخدام رابط SDK بديل ومباشر
+          curl -L "https://github.com/theos/sdks/raw/master/iPhoneOS14.5.sdk.tar.xz" -o /Users/runner/theos/sdks/sdk.tar.xz
+          tar -xf /Users/runner/theos/sdks/sdk.tar.xz -C /Users/runner/theos/sdks
+          # التأكد من مسار الـ SDK
+          ls -R /Users/runner/theos/sdks
 
       - name: Build Dylib
         run: |
