@@ -13,22 +13,27 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Theos and SDK
-        uses: theos/setup-theos@v1
-        with:
-          # هذه الأداة ستجلب الـ SDK الصحيح تلقائياً
-          sdk-version: '14.5'
+      - name: Setup Theos
+        run: |
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
+          echo "THEOS=/Users/runner/theos" >> $GITHUB_ENV
+
+      - name: Setup SDK (Fast & Secure)
+        run: |
+          # تحميل SDK من مصدر موثوق وتجاوز أخطاء tar
+          mkdir -p /Users/runner/theos/sdks
+          git clone --depth 1 https://github.com/theos/sdks.git /tmp/sdks
+          cp -r /tmp/sdks/iPhoneOS14.5.sdk /Users/runner/theos/sdks/
+          ls /Users/runner/theos/sdks/
 
       - name: Build Dylib
         run: |
-          # تنظيف وبناء المشروع باستخدام الـ Theos الذي تم إعداده
+          export THEOS=/Users/runner/theos
           make clean
           make FINALPACKAGE=1
-        env:
-          THEOS: ${{ github.workspace }}/theos
-
+          
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SecurityShield_Product
+          name: SecurityShield_Dylib
           path: .theos/obj/main/*.dylib
