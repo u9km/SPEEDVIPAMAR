@@ -20,19 +20,24 @@ jobs:
 
       - name: Setup SDK
         run: |
-          mkdir -p /Users/runner/theos/sdks
-          # استخدام رابط SDK بديل ومباشر
-          curl -L "https://github.com/theos/sdks/raw/master/iPhoneOS14.5.sdk.tar.xz" -o /Users/runner/theos/sdks/sdk.tar.xz
-          tar -xf /Users/runner/theos/sdks/sdk.tar.xz -C /Users/runner/theos/sdks
-          # التأكد من مسار الـ SDK
-          ls -R /Users/runner/theos/sdks
+          # تحميل SDK من مصدر بديل ومستقر جداً
+          mkdir -p $THEOS/sdks
+          curl -L "https://github.com/theos/sdks/raw/master/iPhoneOS14.5.sdk.tar.xz" -o $THEOS/sdks/sdk.tar.xz
+          
+          # فحص حجم الملف قبل الفك (إذا كان صغيراً جداً يعني هناك خطأ في التحميل)
+          ls -lh $THEOS/sdks/sdk.tar.xz
+          
+          # فك الضغط مع تجاهل الأخطاء البسيطة في المسارات
+          tar -xf $THEOS/sdks/sdk.tar.xz -C $THEOS/sdks/
+          rm $THEOS/sdks/sdk.tar.xz
 
       - name: Build Dylib
         run: |
           export THEOS=/Users/runner/theos
+          # تعيين الـ SDK يدوياً للتأكد من رؤية المترجم له
           make clean
-          make FINALPACKAGE=1
-
+          make FINALPACKAGE=1 SDKVERSION=14.5
+          
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
