@@ -1,16 +1,22 @@
-# إعدادات الهدف والمعمارية
-TARGET := iphone:clang:latest:14.5
+# إعدادات الهدف: آيفون، آخر إصدار SDK، ودعم iOS 12.0 فما فوق
+TARGET := iphone:clang:latest:12.0
+
+# المعماريات المدعومة (أجهزة 64-bit)
 ARCHS = arm64 arm64e
+
+# تحسينات للأداء وتقليل الحجم (نسخة نهائية)
+DEBUG = 0
+FINALPACKAGE = 1
 
 include $(THEOS)/makefiles/common.mk
 
-# اسم التويك (يجب أن يتطابق مع الملفات الأخرى)
+# اسم الأداة (يجب أن يطابق اسم ملف الـ plist)
 TWEAK_NAME = SecurityShield
 
-# الملفات المطلوبة للبناء (تأكد من تسمية Tweak.x بهذا الاسم بالضبط)
+# ملفات المشروع: الكود الأساسي + مكتبة fishhook
 SecurityShield_FILES = Tweak.x fishhook.c
 
-# إعدادات المترجم
-SecurityShield_CFLAGS = -fobjc-arc -O3
+# أعلام المترجم: تفعيل ARC، وتحسين السرعة (-O2)
+SecurityShield_CFLAGS = -fobjc-arc -O2 -Wno-deprecated-declarations
 
 include $(THEOS_MAKE_PATH)/tweak.mk
