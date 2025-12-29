@@ -7,7 +7,7 @@
 #import <objc/runtime.h>
 #import "fishhook.h"
 
-// 🎯 الهدف المحمي
+// 🛡️ تعريف الهدف (ملف الهاك الخاص بك في Esign)
 #define TARGET_HACK "libwebp"
 
 // ============================================================================
@@ -17,7 +17,7 @@ static int (*orig_dladdr)(const void *, Dl_info *);
 int hooked_dladdr(const void *addr, Dl_info *info) {
     int result = orig_dladdr(addr, info);
     if (result && info && info->dli_fname) {
-        // تمويه الدايلب كأنه مكتبة Security الرسمية لتبرير وجود التشفير
+        // تمويه الدايلب كأنه مكتبة Security الرسمية لتبرير التشفير السحابي
         if (strstr(info->dli_fname, TARGET_HACK)) {
             info->dli_fname = "/System/Library/Frameworks/Security.framework/Security";
             info->dli_sname = "SecItemCopyMatching"; 
@@ -28,26 +28,26 @@ int hooked_dladdr(const void *addr, Dl_info *info) {
 }
 
 // ============================================================================
-// 2. حماية الذاكرة والفيزياء (Bullet Track Shield)
+// 2. حماية البولت تراك (Bullet Track Shield)
 // ============================================================================
 static const char* (*orig_dyld_get_image_name)(uint32_t image_index);
 const char* hooked_dyld_get_image_name(uint32_t image_index) {
     const char *name = orig_dyld_get_image_name(image_index);
     if (name && strstr(name, TARGET_HACK)) {
-        // إخفاء المسار الحقيقي للملف عن رادار الحماية ACE
+        // إخفاء المسار الحقيقي للملف عن رادار ACE
         return "/usr/lib/libSystem.B.dylib";
     }
     return name;
 }
 
 // ============================================================================
-// 3. قطع الاتصال بسيرفرات الحماية السحابية (AI Firewall)
+// 3. جدار الحماية الذكي (AI Firewall)
 // ============================================================================
 static int (*orig_getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res);
 int hooked_getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) {
     if (node) {
-        // حظر سيرفرات ACE والتبليغات السحابية لضمان عدم وجود باند
-        if (strstr(node, "ace") || strstr(node, "cloud") || strstr(node, "report") || strstr(node, "vmp") || strstr(node, "log")) {
+        // حظر سيرفرات التبليغ والتحليل السحابي
+        if (strstr(node, "ace") || strstr(node, "cloud") || strstr(node, "report") || strstr(node, "log")) {
             return EAI_NONAME;
         }
     }
@@ -55,7 +55,7 @@ int hooked_getaddrinfo(const char *node, const char *service, const struct addri
 }
 
 // ============================================================================
-// 4. واجهة الترحيب VIP (النسخة المصححة)
+// 4. واجهة الترحيب المصححة (Fixed Syntax)
 // ============================================================================
 static void ShowWelcome() {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
