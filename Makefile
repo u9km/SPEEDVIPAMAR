@@ -5,8 +5,9 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = GCloudShield
 
-# دمج ملف التويك مع مكتبة فيشهوك
 GCloudShield_FILES = Tweak.x fishhook.c
 GCloudShield_CFLAGS = -fobjc-arc
+GCloudShield_LDFLAGS = -Wl,-segalign,4000
 
 include $(THEOS_MAKE_PATH)/tweak.mk
+
