@@ -1,12 +1,15 @@
-THEOS_DEVICE_IP = localhost
-ARCHS = arm64
-TARGET = iphone:clang:latest:13.0
+TARGET := iphone:clang:latest:13.0
+ARCHS := arm64 arm64e
+
+THEOS_PACKAGE_SCHEME = rootless
+INSTALL_TARGET_PROCESSES = YourAppName
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = SovereignArchitecture
-SovereignArchitecture_FILES = Tweak.xm
-SovereignArchitecture_CFLAGS = -fobjc-arc
-SovereignArchitecture_FRAMEWORKS = UIKit Foundation
+TWEAK_NAME = SovereignSecurity
+
+SovereignSecurity_FILES = SovereignSecurity.m
+SovereignSecurity_CFLAGS = -fobjc-arc
+SovereignSecurity_FRAMEWORKS = UIKit Foundation
 
 include $(THEOS_MAKE_PATH)/tweak.mk
