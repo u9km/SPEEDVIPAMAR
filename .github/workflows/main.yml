@@ -18,7 +18,7 @@ jobs:
           brew install ldid
           brew install make
 
-      # 2. إنشاء ملف Info.plist تلقائياً (هذا هو الحل لمشكلتك)
+      # 2. إنشاء Info.plist
       - name: Generate Info.plist
         run: |
           cat <<EOF > Info.plist
@@ -73,19 +73,19 @@ jobs:
           export CODE_SIGNING_REQUIRED=NO
           make FINALPACKAGE=1
 
-      # 7. تجهيز الملفات (نسخ الفريم وورك + نسخ Info.plist داخله إجبارياً)
+      # 7. تجهيز الملفات
       - name: Prepare Artifact
         run: |
           mkdir -p build_output
-          # نسخ مجلد الفريم وورك
+          # نسخ الفريم وورك
           cp -r .theos/obj/GCloudCore.framework build_output/
-          
-          # نسخ ملف Info.plist إلى داخل الفريم وورك بالقوة
+          # وضع Info.plist داخله
           cp Info.plist build_output/GCloudCore.framework/
 
-      # 8. رفع الناتج
+      # 8. رفع الناتج (تم التعديل هنا)
       - name: Upload Framework
         uses: actions/upload-artifact@v4
         with:
           name: GCloudCore_Framework
-          path: build_output/GCloudCore.framework
+          # التعديل: نرفع المجلد الأب (build_output) ليتم الحفاظ على مجلد الفريم وورك بداخله
+          path: build_output/ 
