@@ -196,4 +196,19 @@ __attribute__((constructor))
 static void InitDiamond() {
     struct rebinding rebinds[] = {
         {"getaddrinfo", (void *)hooked_getaddrinfo, (void **)&orig_getaddrinfo},
-        {"dlsym", (void *)hooked_dlsym, (void **
+        {"dlsym", (void *)hooked_dlsym, (void **)&orig_dlsym},
+        {"dladdr", (void *)hooked_dladdr, (void **)&orig_dladdr},
+        {"stat", (void *)hooked_stat, (void **)&orig_stat},
+        {"dlopen", (void *)hooked_dlopen, (void **)&orig_dlopen},
+        {"fopen", (void *)hooked_fopen, (void **)&orig_fopen},
+        {"_dyld_get_image_name", (void *)hooked_dyld_get_image_name, (void **)&orig_dyld_get_image_name}
+    };
+    
+    rebind_symbols(rebinds, 7);
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        LoadHiddenModule();
+    });
+
+    ShowWelcomeMessage();
+}
