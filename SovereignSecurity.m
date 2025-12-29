@@ -1,9 +1,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-// ==========================================
-// 1. Identity Coordinator Layer
-// ==========================================
+#pragma mark - Sovereign Identity Coordinator
+
 @interface SovereignIdentityCoordinator : NSObject
 @property (nonatomic, readonly, strong) NSString *managedIdentifier;
 + (instancetype)sharedCoordinator;
@@ -21,14 +20,14 @@
 }
 
 - (NSString *)managedIdentifier {
+    // Isolated design identity
     return @"com.pubg.korea";
 }
 
 @end
 
-// ==========================================
-// 2. Lifecycle & Scene Compliance
-// ==========================================
+#pragma mark - Sovereign App Orchestrator
+
 @interface SovereignAppOrchestrator : NSObject
 + (void)startOrchestration;
 @end
@@ -39,10 +38,10 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         [[NSNotificationCenter defaultCenter]
-            addObserverForName:UIApplicationDidFinishLaunchingNotification
-                        object:nil
-                         queue:[NSOperationQueue mainQueue]
-                    usingBlock:^(NSNotification *note) {
+         addObserverForName:UIApplicationDidFinishLaunchingNotification
+         object:nil
+         queue:[NSOperationQueue mainQueue]
+         usingBlock:^(NSNotification *note) {
             [self synchronizeInterface];
         }];
     });
@@ -57,39 +56,41 @@
                 [scene isKindOfClass:[UIWindowScene class]]) {
 
                 UIWindowScene *windowScene = (UIWindowScene *)scene;
-                keyWindow = windowScene.windows.firstObject;
+                for (UIWindow *window in windowScene.windows) {
+                    if (window.isKeyWindow) {
+                        keyWindow = window;
+                        break;
+                    }
+                }
                 break;
             }
         }
-    } else {
-        keyWindow = UIApplication.sharedApplication.keyWindow;
     }
 
     if (!keyWindow) return;
 
     UIViewController *rootVC = keyWindow.rootViewController;
-    if (rootVC && !rootVC.presentedViewController) {
-        UIAlertController *alert =
-        [UIAlertController alertControllerWithTitle:@"🛡️ SOVEREIGN ARCH"
-                                            message:@"Architecture: Enterprise Level\nStatus: System Compliant"
-                                     preferredStyle:UIAlertControllerStyleAlert];
+    if (!rootVC || rootVC.presentedViewController) return;
 
-        [alert addAction:[UIAlertAction actionWithTitle:@"ESTABLISH"
-                                                  style:UIAlertActionStyleDefault
-                                                handler:nil]];
+    UIAlertController *alert =
+    [UIAlertController alertControllerWithTitle:@"🛡️ SOVEREIGN ARCH"
+                                        message:@"Architecture: Enterprise Level\nStatus: System Compliant"
+                                 preferredStyle:UIAlertControllerStyleAlert];
 
-        [rootVC presentViewController:alert animated:YES completion:nil];
+    [alert addAction:[UIAlertAction actionWithTitle:@"ESTABLISH"
+                                              style:UIAlertActionStyleDefault
+                                            handler:nil]];
 
-        NSLog(@"[Sovereign] Security Layer Deployed. ID: %@",
-              [SovereignIdentityCoordinator sharedCoordinator].managedIdentifier);
-    }
+    [rootVC presentViewController:alert animated:YES completion:nil];
+
+    NSLog(@"[Sovereign] Security Layer Deployed. ID: %@",
+          [SovereignIdentityCoordinator sharedCoordinator].managedIdentifier);
 }
 
 @end
 
-// ==========================================
-// 3. Entry Point
-// ==========================================
+#pragma mark - Entry Point
+
 __attribute__((constructor))
 static void SovereignEntry(void) {
     [SovereignAppOrchestrator startOrchestration];
