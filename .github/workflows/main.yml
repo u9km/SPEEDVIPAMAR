@@ -1,4 +1,4 @@
-name: Build GCloudShield VIP
+name: Build Pro Max Shield
 
 on:
   push:
@@ -9,12 +9,9 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Dependencies
+      - uses: actions/checkout@v4
+      - name: Dependencies
         run: brew install ldid xz
-
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
@@ -22,20 +19,18 @@ jobs:
           unzip master.zip
           mv sdks-master ~/theos/sdks
           rm master.zip
-
-      - name: Build Tweak
+      - name: Build
         run: |
           export THEOS=~/theos
           make clean
           make messages=yes
-
       - name: Prepare Artifact
         run: |
           mkdir -p build_output
+          # نظام بحث ذكي لحل مشكلة exit code 1 وتغير الأسماء
           find .theos/obj -name "*.dylib" -exec cp {} build_output/ \;
-
-      - name: Upload Artifact
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: GCloudShield-Final
+          name: Pro-Max-Final-Dylib
           path: build_output/
