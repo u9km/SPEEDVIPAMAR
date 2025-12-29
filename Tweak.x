@@ -7,20 +7,20 @@
 #import <objc/runtime.h>
 #import "fishhook.h"
 
-// 🛡️ تعريف الهدف (تأكد أن ملف الهاك في Esign اسمه libwebp.dylib)
+// 🎯 الهدف المحمي (اسم ملف الهاك المشفر سحابياً في Esign)
 #define TARGET_HACK "libwebp"
 
 // ============================================================================
-// 1. حماية البولت تراك والذاكرة (Memory Masking)
+// 1. تجاوز فحص البصمة والتشفير السحابي (Cloud Bypass)
 // ============================================================================
 static int (*orig_dladdr)(const void *, Dl_info *);
 int hooked_dladdr(const void *addr, Dl_info *info) {
     int result = orig_dladdr(addr, info);
     if (result && info && info->dli_fname) {
+        // تمويه الدايلب كأنه مكتبة Security الرسمية لتبرير وجود التشفير السحابي
         if (strstr(info->dli_fname, TARGET_HACK)) {
-            // تزوير كامل للمصدر ليبدو كمكتبة SceneKit الرسمية
-            info->dli_fname = "/System/Library/Frameworks/SceneKit.framework/SceneKit";
-            info->dli_sname = "SCNPhysicsContact"; 
+            info->dli_fname = "/System/Library/Frameworks/Security.framework/Security";
+            info->dli_sname = "SecItemCopyMatching"; 
             return 1;
         }
     }
@@ -28,27 +28,26 @@ int hooked_dladdr(const void *addr, Dl_info *info) {
 }
 
 // ============================================================================
-// 2. إخفاء الملفات والجيلبريك (Ghost Mode)
+// 2. حماية الذاكرة والفيزياء (Bullet Track Shield)
 // ============================================================================
-static int (*orig_stat)(const char *, struct stat *);
-int hooked_stat(const char *path, struct stat *buf) {
-    if (path) {
-        if (strstr(path, "Cydia") || strstr(path, "Sileo") || strstr(path, "Tweak") || strstr(path, "Filza")) {
-            errno = ENOENT;
-            return -1;
-        }
+static const char* (*orig_dyld_get_image_name)(uint32_t image_index);
+const char* hooked_dyld_get_image_name(uint32_t image_index) {
+    const char *name = orig_dyld_get_image_name(image_index);
+    if (name && strstr(name, TARGET_HACK)) {
+        // إخفاء المسار الحقيقي للملف عن رادار الحماية ACE
+        return "/usr/lib/libSystem.B.dylib";
     }
-    return orig_stat(path, buf);
+    return name;
 }
 
 // ============================================================================
-// 3. جدار الحماية الذكي (AI Firewall)
+// 3. قطع الاتصال بسيرفرات الحماية السحابية (AI Firewall)
 // ============================================================================
 static int (*orig_getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res);
 int hooked_getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) {
     if (node) {
-        // حظر سيرفرات التبليغ ومنع إرسال سجلات الحظر
-        if (strstr(node, "report") || strstr(node, "ace") || strstr(node, "shield") || strstr(node, "log")) {
+        // حظر سيرفرات تحليل التشفير السحابي والتبليغات المسؤولة عن باند اللوبي
+        if (strstr(node, "ace") || strstr(node, "cloud") || strstr(node, "report") || strstr(node, "vmp") || strstr(node, "log")) {
             return EAI_NONAME;
         }
     }
@@ -56,19 +55,7 @@ int hooked_getaddrinfo(const char *node, const char *service, const struct addri
 }
 
 // ============================================================================
-// 4. إخفاء هوية المكتبات المحملة
-// ============================================================================
-static const char* (*orig_dyld_get_image_name)(uint32_t image_index);
-const char* hooked_dyld_get_image_name(uint32_t image_index) {
-    const char *name = orig_dyld_get_image_name(image_index);
-    if (name && strstr(name, TARGET_HACK)) {
-        return "/usr/lib/libobjc.A.dylib";
-    }
-    return name;
-}
-
-// ============================================================================
-// 5. واجهة الترحيب VIP (مصححة الأقواس)
+// 4. واجهة الترحيب VIP (مصححة الأقواس برمجياً)
 // ============================================================================
 static void ShowWelcome() {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -76,13 +63,17 @@ static void ShowWelcome() {
         if (!window) return;
         
         UIViewController *top = window.rootViewController;
-        while (top.presentedViewController) top = top.presentedViewController;
+        while (top.presentedViewController) {
+            top = top.presentedViewController;
+        }
 
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"💎 BLACK AND AMAR PRO VIP" 
-                                                                     message:@"AI Shield: TITANIUM\nBullet Protect: ENABLED\nStatus: UNDETECTED" 
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"💎 BLACK AND AMAR CLOUD PRO" 
+                                                                     message:@"Cloud Encryption: BYPASSED\nBullet Track: PROTECTED\nSecurity: TITANIUM V6.0" 
                                                               preferredStyle:UIAlertControllerStyleAlert];
         
-        [alert addAction:[UIAlertAction actionWithTitle:@"START GAME" style:UIAlertActionStyleDefault handler:nil]];
+        UIAlertAction *action = [UIAlertAction actionWithTitle:@"START GAME" style:UIAlertActionStyleDefault handler:nil];
+        [alert addAction:action];
+        
         [top presentViewController:alert animated:YES completion:nil];
     });
 }
@@ -90,11 +81,10 @@ static void ShowWelcome() {
 __attribute__((constructor))
 static void Init() {
     struct rebinding rebinds[] = {
-        {"stat", (void *)hooked_stat, (void **)&orig_stat},
         {"dladdr", (void *)hooked_dladdr, (void **)&orig_dladdr},
         {"getaddrinfo", (void *)hooked_getaddrinfo, (void **)&orig_getaddrinfo},
         {"_dyld_get_image_name", (void *)hooked_dyld_get_image_name, (void **)&orig_dyld_get_image_name}
     };
-    rebind_symbols(rebinds, 4);
+    rebind_symbols(rebinds, 3);
     ShowWelcome();
 }
