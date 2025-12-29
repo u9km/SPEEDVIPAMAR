@@ -1,4 +1,4 @@
-name: Build Sovereign Architecture
+name: Build Sovereign Security
 
 on:
   push:
@@ -8,34 +8,36 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Install Dependencies
-        run: |
-          brew install ldid xz
+    - name: Install Dependencies
+      run: |
+        brew install ldid xz
 
-      - name: Setup Theos
-        run: |
-          git clone --recursive https://github.com/theos/theos.git ~/theos
-          curl -LO https://github.com/theos/sdks/archive/master.zip
-          unzip master.zip
-          mv sdks-master ~/theos/sdks
-          rm master.zip
+    - name: Setup Theos
+      run: |
+        git clone --recursive https://github.com/theos/theos.git $HOME/theos
+        curl -L https://github.com/theos/sdks/archive/master.zip -o sdks.zip
+        unzip sdks.zip
+        mv sdks-master $HOME/theos/sdks
+        rm sdks.zip
 
-      - name: Build
-        run: |
-          export THEOS=~/theos
-          make -C $GITHUB_WORKSPACE clean
-          make -C $GITHUB_WORKSPACE
+    - name: Build
+      run: |
+        export THEOS=$HOME/theos
+        make clean
+        make
 
-      - name: Prepare Artifact
-        run: |
-          mkdir -p build_output
-          find .theos/obj -name "*.dylib" -exec cp {} build_output/ \;
+    - name: Collect Artifacts
+      run: |
+        mkdir -p output
+        find .theos/obj -name "*.dylib" -exec cp {} output/ \;
 
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: Sovereign-Architecture-Final
-          path: build_output/
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: SovereignSecurity-Build
+        path: output/
