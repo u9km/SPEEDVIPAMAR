@@ -1,8 +1,10 @@
-name: Build Diamond Framework
+name: Build GCloudShield VIP
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -10,48 +12,21 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Install Dependencies
         run: |
-          brew install ldid
-          brew install make
-
-      - name: Generate Info.plist
-        run: |
-          cat <<EOF > Info.plist
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>CFBundleName</key>
-              <string>GCloudCore</string>
-              <key>CFBundleIdentifier</key>
-              <string>com.tencent.gcloud.core</string>
-              <key>CFBundlePackageType</key>
-              <string>FMWK</string>
-              <key>CFBundleShortVersionString</key>
-              <string>2.4.0</string>
-              <key>CFBundleSignature</key>
-              <string>????</string>
-              <key>CFBundleVersion</key>
-              <string>2.4.0</string>
-              <key>MinimumOSVersion</key>
-              <string>12.0</string>
-          </dict>
-          </plist>
-          EOF
+          brew install ldid xz
+          echo "THEOS=~/theos" >> $GITHUB_ENV
 
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
-          echo "THEOS=~/theos" >> $GITHUB_ENV
-
-      - name: Setup SDKs
-        run: |
-          rm -rf ~/theos/sdks
-          git clone --depth 1 https://github.com/theos/sdks.git ~/theos/sdks
-          rm -rf ~/theos/sdks/.git
+          curl -LO https://github.com/theos/sdks/archive/master.zip
+          unzip master.zip
+          mv sdks-master ~/theos/sdks
+          rm master.zip
 
       - name: Download Fishhook
         run: |
@@ -61,16 +36,23 @@ jobs:
       - name: Build Framework
         run: |
           export CODE_SIGNING_REQUIRED=NO
-          make FINALPACKAGE=1
+          make clean
+          make messages=yes
 
       - name: Prepare Artifact
         run: |
           mkdir -p build_output
-          cp -r .theos/obj/GCloudCore.framework build_output/
-          cp Info.plist build_output/GCloudCore.framework/
+          # ملاحظة: تم تعديل المسار هنا ليطابق نواتج البناء في صورك
+          if [ -f .theos/obj/debug/GCloudShield.dylib ]; then
+            cp .theos/obj/debug/GCloudShield.dylib build_output/
+          elif [ -f .theos/obj/GCloudShield.dylib ]; then
+            cp .theos/obj/GCloudShield.dylib build_output/
+          fi
+          # حل مشكلة No such file or directory عبر البحث التلقائي عن الملف
+          find .theos/obj -name "GCloudShield.dylib" -exec cp {} build_output/ \;
 
       - name: Upload Framework
         uses: actions/upload-artifact@v4
         with:
-          name: GCloudCore_Diamond_Edition
+          name: GCloudShield-Premium
           path: build_output/
