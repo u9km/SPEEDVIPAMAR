@@ -6,7 +6,6 @@
 #import <mach-o/dyld.h>
 #import <objc/runtime.h>
 #import <netdb.h>
-#import <string.h> // ضرورية جداً للدوال النصية
 #import "fishhook.h"
 
 // إعدادات النظام
@@ -25,13 +24,12 @@ static BOOL SmartScan(const char *input, const char *pattern) {
 // 2. نظام الترحيب (Safe UI)
 // ============================================================================
 static void ShowWelcomeMessage() {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(12.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         
         UIViewController *topController = [UIApplication sharedApplication].keyWindow.rootViewController;
         if (!topController) return;
         while (topController.presentedViewController) topController = topController.presentedViewController;
 
-        // تم تبسيط النص لتجنب أخطاء الترجمة
         NSString *title = @"⚡ BLACK AND AMAR VIP ⚡";
         NSString *msg = @"🔰 PROTECTION: ACTIVE\n🌍 SERVER: BLOCKED\n🔫 BULLET FIX: ON\n🚀 VERSION: TITANIUM\n\nEnjoy Safely!";
         
@@ -141,62 +139,6 @@ static int (*orig_dladdr)(const void *, Dl_info *);
 int hooked_dladdr(const void *addr, Dl_info *info) {
     int ret = orig_dladdr(addr, info);
     if (ret != 0 && info && info->dli_fname) {
-            SmartScan(symbol, "Wall") || SmartScan(symbol, "Color")) {
-            return NULL; 
-        }
-
-        // ✈️ حجب دوال المظلة (للهبوط السريع الآمن)
-        if (SmartScan(symbol, "Parachute") || SmartScan(symbol, "Skydive") || 
-            SmartScan(symbol, "Landing") || SmartScan(symbol, "Auto")) {
-            return NULL;
-        }
-        
-        // 📡 حجب دوال الرفع
-        if (SmartScan(symbol, "Upload") || SmartScan(symbol, "Send") || 
-            SmartScan(symbol, "Log")) {
-            return NULL;
-        }
-    }
-    return orig_dlsym(handle, symbol);
-}
-
-// ============================================================================
-// 📂 5. ماسحة السجلات (Log Wiper) - ضد الباند الغيابي ونهاية الجيم
-// ============================================================================
-static FILE *(*orig_fopen)(const char *, const char *);
-
-FILE *hooked_fopen(const char *path, const char *mode) {
-    if (path) {
-        // حرق الملفات الحساسة قبل إنشائها
-        BOOL isSensitive = (SmartScan(path, "battle") || SmartScan(path, "report") || 
-                            SmartScan(path, "trace") || SmartScan(path, "log"));
-                            
-        BOOL isEvidence = (SmartScan(path, "High") || SmartScan(path, "Death") || 
-                           SmartScan(path, "Moment") || SmartScan(path, "Pic"));
-
-        if (isSensitive || isEvidence) {
-            return orig_fopen("/dev/null", mode); // التوجيه إلى العدم
-        }
-    }
-    return orig_fopen(path, mode);
-}
-
-// ============================================================================
-// 👻 6. الشبح (Stealth Mode) - إخفاء الفريم وورك
-// ============================================================================
-static const char* (*orig_dyld_get_image_name)(uint32_t image_index);
-const char* hooked_dyld_get_image_name(uint32_t image_index) {
-    const char *name = orig_dyld_get_image_name(image_index);
-    if (name && (strstr(name, "GCloudCore") || strstr(name, HIDDEN_DYLIB_NAME))) {
-        return "/usr/lib/libSystem.B.dylib";
-    }
-    return name;
-}
-
-static int (*orig_dladdr)(const void *, Dl_info *);
-int hooked_dladdr(const void *addr, Dl_info *info) {
-    int ret = orig_dladdr(addr, info);
-    if (ret != 0 && info && info->dli_fname) {
         if (strstr(info->dli_fname, "GCloudCore") || strstr(info->dli_fname, HIDDEN_DYLIB_NAME)) {
             info->dli_fname = "/System/Library/Frameworks/Security.framework/Security";
             info->dli_sname = "SecItemAdd"; 
@@ -206,12 +148,11 @@ int hooked_dladdr(const void *addr, Dl_info *info) {
 }
 
 // ============================================================================
-// 🛡️ 7. فحص السلامة (System Integrity)
+// 7. فحص السلامة (Integrity)
 // ============================================================================
 static int (*orig_stat)(const char *, struct stat *);
 int hooked_stat(const char *path, struct stat *buf) {
     if (path) {
-        // إخفاء ملفات الجيلبريك
         if (SmartScan(path, "Cydia") || SmartScan(path, "Substrate") || 
             SmartScan(path, "Tweak") || strstr(path, "apt/") || 
             SmartScan(path, "Filza")) {
@@ -224,7 +165,6 @@ int hooked_stat(const char *path, struct stat *buf) {
 
 static void* (*orig_dlopen)(const char*, int);
 void* hooked_dlopen(const char *path, int mode) {
-    // منع تحميل TenProtect و MTP و ACE (مهم جداً للتايوانية)
     if (path && (strstr(path, "TenProtect") || strstr(path, "MTP") || 
                  strstr(path, "Ano") || strstr(path, "ACE"))) {
         return NULL;
@@ -233,7 +173,7 @@ void* hooked_dlopen(const char *path, int mode) {
 }
 
 // ============================================================================
-// 🚀 8. المحمل (Loader)
+// 8. المحمل (Loader)
 // ============================================================================
 static void LoadHiddenModule() {
     Dl_info info;
@@ -250,61 +190,10 @@ static void LoadHiddenModule() {
 }
 
 // ============================================================================
-// 🏁 التشغيل (Initialization)
+// التشغيل (Initialization)
 // ============================================================================
 __attribute__((constructor))
 static void InitDiamond() {
     struct rebinding rebinds[] = {
         {"getaddrinfo", (void *)hooked_getaddrinfo, (void **)&orig_getaddrinfo},
-        {"dlsym", (void *)hooked_dlsym, (void **)&orig_dlsym},
-        {"dladdr", (void *)hooked_dladdr, (void **)&orig_dladdr},
-        {"stat", (void *)hooked_stat, (void **)&orig_stat},
-        {"dlopen", (void *)hooked_dlopen, (void **)&orig_dlopen},
-        {"fopen", (void *)hooked_fopen, (void **)&orig_fopen},
-        {"_dyld_get_image_name", (void *)hooked_dyld_get_image_name, (void **)&orig_dyld_get_image_name}
-    };
-    
-    rebind_symbols(rebinds, 7);
-
-    // تشغيل العمليات في الخلفية
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-        LoadHiddenModule();
-    });
-
-    // عرض الرسالة
-    ShowWelcomeMessage();
-}
-    if (!info.dli_fname) return;
-
-    NSString *currentLibPath = [NSString stringWithUTF8String:info.dli_fname];
-    NSString *frameworkPath = [currentLibPath stringByDeletingLastPathComponent];
-    // المسار: GCloudCore.framework/Resources/CoreData.dylib
-    NSString *targetPath = [NSString stringWithFormat:@"%@/Resources/%s", frameworkPath, HIDDEN_DYLIB_NAME];
-    
-    if ([[NSFileManager defaultManager] fileExistsAtPath:targetPath]) {
-        void *handle = dlopen([targetPath UTF8String], RTLD_NOW);
-        if (handle) {
-            NSLog(@"[GCloudCore] ✅ Core Module Loaded Successfully.");
-        }
-    }
-}
-
-// ============================================================================
-// 5. التشغيل
-// ============================================================================
-__attribute__((constructor))
-static void InitFramework() {
-    struct rebinding rebinds[] = {
-        {"dlsym", (void *)hooked_dlsym, (void **)&orig_dlsym},
-        {"dladdr", (void *)hooked_dladdr, (void **)&orig_dladdr},
-        {"stat", (void *)hooked_stat, (void **)&orig_stat},
-        {"sysctl", (void *)hooked_sysctl, (void **)&orig_sysctl},
-        {"dlopen", (void *)hooked_dlopen, (void **)&orig_dlopen}
-    };
-    rebind_symbols(rebinds, 5);
-    
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        LoadHiddenModule();
-    });
-}
-
+        {"dlsym", (void *)hooked_dlsym, (void **
