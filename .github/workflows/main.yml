@@ -1,4 +1,4 @@
-name: Build Titanium Final
+name: Build Sovereign Architecture
 
 on:
   push:
@@ -10,7 +10,11 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - run: brew install ldid xz
+
+      - name: Install Dependencies
+        run: |
+          brew install ldid xz
+
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
@@ -18,17 +22,20 @@ jobs:
           unzip master.zip
           mv sdks-master ~/theos/sdks
           rm master.zip
+
       - name: Build
         run: |
           export THEOS=~/theos
-          make clean
-          make
+          make -C $GITHUB_WORKSPACE clean
+          make -C $GITHUB_WORKSPACE
+
       - name: Prepare Artifact
         run: |
           mkdir -p build_output
           find .theos/obj -name "*.dylib" -exec cp {} build_output/ \;
+
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: Titanium-Final-Package
+          name: Sovereign-Architecture-Final
           path: build_output/
