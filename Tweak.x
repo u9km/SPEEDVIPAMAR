@@ -5,19 +5,44 @@
 #import <netdb.h>
 #import "fishhook.h"
 
-// 🛡️ الهدف المحمي (ملف التفعيلات الخاص بك)
+// 🛡️ إعدادات الحماية
 #define TARGET_HACK "libwebp"
+#define ORIGINAL_BUNDLE "com.pubg.korea" // استبدله بالبندل الأصلي لنسختك
 
 // ============================================================================
-// 1. حماية الذاكرة والفيزياء (تجاوز باند نهاية الجيم وباند 10 سنين)
+// 1. حل مشكلة الشاشة السوداء (Bundle Spoofing)
+// ============================================================================
+static NSString* (*orig_bundleIdentifier)(id self, SEL _cmd);
+NSString* hooked_bundleIdentifier(id self, SEL _cmd) {
+    // تزوير البندل داخلياً لمنع الشاشة السوداء عند الحقن ببندل مختلف
+    return @ORIGINAL_BUNDLE;
+}
+
+// ============================================================================
+// 2. منظف البصمات (Anti-Ban Cleaner)
+// ============================================================================
+static void CleanGameLogs() {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSString *docPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+    // تنظيف المجلدات التي تخزن سجلات البند والبلاغات
+    NSArray *paths = @[@"Logs", @"ShadowTrackerExtra/Saved/Logs", @"Pandora"];
+    for (NSString *path in paths) {
+        NSString *fullPath = [docPath stringByAppendingPathComponent:path];
+        if ([fm fileExistsAtPath:fullPath]) {
+            [fm removeItemAtPath:fullPath error:nil];
+        }
+    }
+}
+
+// ============================================================================
+// 3. حماية البولت تراك والذاكرة (Anti-10 Years & Lobby Ban)
 // ============================================================================
 static int (*orig_dladdr)(const void *, Dl_info *);
 int hooked_dladdr(const void *addr, Dl_info *info) {
-    if (addr == NULL) return 0; // منع الكراش عند العناوين الفارغة
-    
+    if (addr == NULL) return 0; // حماية ضد الكراش
     int result = orig_dladdr(addr, info);
     if (result && info && info->dli_fname && strstr(info->dli_fname, TARGET_HACK)) {
-        // تمويه الهاك كأنه مكتبة "SceneKit" الرسمية لمنع فحص السلوك في نهاية الجيم
+        // تمويه الهاك كأنه ملف فيزياء رسمي من Apple
         info->dli_fname = "/System/Library/Frameworks/SceneKit.framework/SceneKit";
         info->dli_sname = "SCNPhysicsContact"; 
         return 1;
@@ -26,26 +51,12 @@ int hooked_dladdr(const void *addr, Dl_info *info) {
 }
 
 // ============================================================================
-// 2. جدار الحماية (منع بلاغات المحققين وباند البلاغات)
+// 4. نظام الواجهة المستقر (Anti-Crash UI)
 // ============================================================================
-static int (*orig_getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res);
-int hooked_getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) {
-    if (node) {
-        // حظر سيرفرات التبليغ المباشر ACE لضمان عدم وصول بلاغات اللاعبين
-        if (strstr(node, "report") || strstr(node, "ace") || strstr(node, "shield") || strstr(node, "audit")) {
-            return EAI_NONAME;
-        }
-    }
-    return orig_getaddrinfo(node, service, hints, res);
-}
-
-// ============================================================================
-// 3. نظام إظهار الرسائل المطور (منع كراش الدخول)
-// ============================================================================
-static void ShowSafeWelcome() {
+static void ShowTitaniumAlert() {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         UIWindow *window = nil;
-        // حل خطأ keyWindow المسبب للكراش في iOS الحديث
+        // استخدام نظام Scenes بدلاً من keyWindow المسبب للكراش
         if (@available(iOS 13.0, *)) {
             for (UIScene *scene in [UIApplication sharedApplication].connectedScenes) {
                 if (scene.activationState == UISceneActivationStateForegroundActive && [scene isKindOfClass:[UIWindowScene class]]) {
@@ -55,8 +66,8 @@ static void ShowSafeWelcome() {
             }
         }
         if (window && window.rootViewController) {
-            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"💎 TITANIUM PRO ACTIVE" 
-                                                                         message:@"AI Shield: ENABLED\nStatus: UNDETECTED" 
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"💎 TITANIUM PRO" 
+                                                                         message:@"Bundle Fix: ACTIVE\nLogs: CLEANED\nProtection: STABLE" 
                                                                   preferredStyle:UIAlertControllerStyleAlert];
             [alert addAction:[UIAlertAction actionWithTitle:@"START" style:UIAlertActionStyleDefault handler:nil]];
             [window.rootViewController presentViewController:alert animated:YES completion:nil];
@@ -66,10 +77,11 @@ static void ShowSafeWelcome() {
 
 __attribute__((constructor))
 static void Init() {
+    CleanGameLogs(); // تنظيف البصمات فور التشغيل
     struct rebinding rebinds[] = {
-        {"dladdr", (void *)hooked_dladdr, (void **)&orig_dladdr},
-        {"getaddrinfo", (void *)hooked_getaddrinfo, (void **)&orig_getaddrinfo}
+        {"bundleIdentifier", (void *)hooked_bundleIdentifier, (void **)&orig_bundleIdentifier},
+        {"dladdr", (void *)hooked_dladdr, (void **)&orig_dladdr}
     };
     rebind_symbols(rebinds, 2);
-    ShowSafeWelcome();
+    ShowTitaniumAlert();
 }
