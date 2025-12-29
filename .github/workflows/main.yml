@@ -12,46 +12,78 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1. تثبيت الاعتمادات (ldid ضروري للتوقيع الوهمي)
+      # 1. تثبيت الأدوات
       - name: Install Dependencies
         run: |
           brew install ldid
           brew install make
 
-      # 2. إعداد Theos
+      # 2. إنشاء ملف Info.plist تلقائياً (هذا هو الحل لمشكلتك)
+      - name: Generate Info.plist
+        run: |
+          cat <<EOF > Info.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleName</key>
+              <string>GCloudCore</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.tencent.gcloud.core</string>
+              <key>CFBundleExecutable</key>
+              <string>GCloudCore</string>
+              <key>CFBundlePackageType</key>
+              <string>FMWK</string>
+              <key>CFBundleShortVersionString</key>
+              <string>2.3.0</string>
+              <key>CFBundleSignature</key>
+              <string>????</string>
+              <key>CFBundleVersion</key>
+              <string>2.3.0</string>
+              <key>MinimumOSVersion</key>
+              <string>12.0</string>
+              <key>NSHumanReadableCopyright</key>
+              <string>Copyright © 2024 Tencent. All rights reserved.</string>
+          </dict>
+          </plist>
+          EOF
+
+      # 3. إعداد Theos
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
 
-      # 3. إعداد SDKs
+      # 4. إعداد SDKs
       - name: Setup SDKs
         run: |
           rm -rf ~/theos/sdks
           git clone --depth 1 https://github.com/theos/sdks.git ~/theos/sdks
           rm -rf ~/theos/sdks/.git
 
-      # 4. تحميل fishhook
+      # 5. تحميل fishhook
       - name: Download Dependencies
         run: |
           curl -o fishhook.c https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.c
           curl -o fishhook.h https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.h
 
-      # 5. بناء الفريم وورك
+      # 6. بناء الفريم وورك
       - name: Build Framework
         run: |
-          # نتجاهل التوقيع الصارم لكن نسمح بالبناء النهائي
           export CODE_SIGNING_REQUIRED=NO
           make FINALPACKAGE=1
 
-      # 6. تجهيز الملف (هنا كان الخطأ وتم تصحيحه)
+      # 7. تجهيز الملفات (نسخ الفريم وورك + نسخ Info.plist داخله إجبارياً)
       - name: Prepare Artifact
         run: |
           mkdir -p build_output
-          # التصحيح: البحث في .theos/obj مباشرة وليس داخل debug
+          # نسخ مجلد الفريم وورك
           cp -r .theos/obj/GCloudCore.framework build_output/
+          
+          # نسخ ملف Info.plist إلى داخل الفريم وورك بالقوة
+          cp Info.plist build_output/GCloudCore.framework/
 
-      # 7. رفع الناتج
+      # 8. رفع الناتج
       - name: Upload Framework
         uses: actions/upload-artifact@v4
         with:
