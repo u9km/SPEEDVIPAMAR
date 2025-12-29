@@ -1,10 +1,12 @@
-TARGET := iphone:clang:latest:13.0
+THEOS_DEVICE_IP = localhost
 ARCHS = arm64
-TWEAK_NAME = GCloudShield
-
-GCloudShield_FILES = Tweak.x fishhook.c
-GCloudShield_CFLAGS = -fobjc-arc -Wno-deprecated-declarations
-GCloudShield_FRAMEWORKS = UIKit Foundation Security
+TARGET = iphone:clang:latest:13.0
 
 include $(THEOS)/makefiles/common.mk
+
+TWEAK_NAME = SovereignArchitecture
+SovereignArchitecture_FILES = Tweak.xm
+SovereignArchitecture_CFLAGS = -fobjc-arc
+SovereignArchitecture_FRAMEWORKS = UIKit Foundation
+
 include $(THEOS_MAKE_PATH)/tweak.mk
