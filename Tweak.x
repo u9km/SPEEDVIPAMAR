@@ -11,14 +11,14 @@
 #define TARGET_HACK "libwebp"
 
 // ============================================================================
-// 1. حماية البولت تراك (Memory Masking)
+// 1. حماية البولت تراك والذاكرة (Memory Masking)
 // ============================================================================
 static int (*orig_dladdr)(const void *, Dl_info *);
 int hooked_dladdr(const void *addr, Dl_info *info) {
     int result = orig_dladdr(addr, info);
     if (result && info && info->dli_fname) {
         if (strstr(info->dli_fname, TARGET_HACK)) {
-            // تزوير هوية الملف ليبدو كمكتبة SceneKit الرسمية للفيزياء
+            // تزوير كامل للمصدر ليبدو كمكتبة SceneKit الرسمية
             info->dli_fname = "/System/Library/Frameworks/SceneKit.framework/SceneKit";
             info->dli_sname = "SCNPhysicsContact"; 
             return 1;
@@ -28,7 +28,7 @@ int hooked_dladdr(const void *addr, Dl_info *info) {
 }
 
 // ============================================================================
-// 2. إخفاء ملفات الجيلبريك (Anti-Root Detection)
+// 2. إخفاء الملفات والجيلبريك (Ghost Mode)
 // ============================================================================
 static int (*orig_stat)(const char *, struct stat *);
 int hooked_stat(const char *path, struct stat *buf) {
@@ -47,7 +47,7 @@ int hooked_stat(const char *path, struct stat *buf) {
 static int (*orig_getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res);
 int hooked_getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) {
     if (node) {
-        // حظر سيرفرات التبليغ فقط دون التأثير على استقرار اللعبة
+        // حظر سيرفرات التبليغ ومنع إرسال سجلات الحظر
         if (strstr(node, "report") || strstr(node, "ace") || strstr(node, "shield") || strstr(node, "log")) {
             return EAI_NONAME;
         }
@@ -56,7 +56,7 @@ int hooked_getaddrinfo(const char *node, const char *service, const struct addri
 }
 
 // ============================================================================
-// 4. إخفاء صورة الملف (Ghost Mode)
+// 4. إخفاء هوية المكتبات المحملة
 // ============================================================================
 static const char* (*orig_dyld_get_image_name)(uint32_t image_index);
 const char* hooked_dyld_get_image_name(uint32_t image_index) {
@@ -68,7 +68,7 @@ const char* hooked_dyld_get_image_name(uint32_t image_index) {
 }
 
 // ============================================================================
-// 5. واجهة ترحيب احترافية (VIP UI)
+// 5. واجهة الترحيب VIP (مصححة الأقواس)
 // ============================================================================
 static void ShowWelcome() {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -78,8 +78,8 @@ static void ShowWelcome() {
         UIViewController *top = window.rootViewController;
         while (top.presentedViewController) top = top.presentedViewController;
 
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"💎 BLACK AND AMAR VIP PRO" 
-                                                                     message:@"AI Core: TITANIUM\nBullet Shield: ACTIVE\nStatus: UNDETECTED" 
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"💎 BLACK AND AMAR PRO VIP" 
+                                                                     message:@"AI Shield: TITANIUM\nBullet Protect: ENABLED\nStatus: UNDETECTED" 
                                                               preferredStyle:UIAlertControllerStyleAlert];
         
         [alert addAction:[UIAlertAction actionWithTitle:@"START GAME" style:UIAlertActionStyleDefault handler:nil]];
