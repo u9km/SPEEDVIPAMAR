@@ -1,394 +1,158 @@
 #import <Foundation/Foundation.h>
-#import <mach-o/dyld.h>
+#import <sys/stat.h>
+#import <sys/sysctl.h>
 #import <dlfcn.h>
-#import <string.h>
+#import <mach-o/dyld.h>
+#import <objc/runtime.h>
 #import "fishhook.h"
 
 // ============================================================================
-// تعريفات لتحسين الأداء
+// إعدادات الملف المخفي (الذي ستضعه أنت لاحقاً)
 // ============================================================================
-// متغيرات لتخزين القائمة المرتبة للبحث السريع
-static const char **sortedBlockedList = NULL;
-static size_t sortedListSize = 0;
+#define HIDDEN_DYLIB_NAME "CoreData.dylib"
 
 // ============================================================================
-// القائمة الكاملة (تم دمج جميع النصوص من ملفك)
-// ============================================================================
-static const char *rawBlockedStrings[] = {
-    // --- المصدر 1: القائمة الأساسية والمسارات ---
-    "Jailbreak", "Cydia", "CydiaSubstrate", "MobileSubstrate", "Substrate",
-    "TweakInject", "Choicy", "Shadow", "Spark", "HideJB", "Sileo", "Zebra",
-    "Filza", "Iza", "iFile", "Liberty", "FlyJB", "KernBypass", "Unc0ver", "Checkra1n",
-    "apt", "dpkg", "cydia", "fakesigned", "cycript", "substrate",
-    "bin/sh", "usr/bin/sshd", "usr/sbin/sshd", "etc/apt",
-    "(id)loadPendingCrashReportData", "(TimestamporEventTiming.", "9005_alert", "9010_alert:%s",
-    "a:%d,r:%d", "a.MCMoveOnGroundSpeedThreshold", "a.MovingOnGroundSpeedThreshold", "ACH",
-
-    // --- المصدر 2: تقارير الأنشطة وكشف الغش ---
-    "ActivityEventReportData", "AIKill", "AIKillPlayerInfo", "AimCameraModeData", "Akamai",
-    "anim.GProneMoveSpeedIgnoreRange", "AntiCheatDetailData", "AntiCheatMovementRawData",
-    "AntiMoveCheatFlow", "AntiTampering", "AppAttestation", "AppVersion", "ASLR_enforcement",
-    "AssetProtection", "AuthInfoKey", "authenticateConnection", "authenticateDevice",
-    "authenticateLicenseKey", "authenticateSession", "authenticateUser", "authorizeAccess",
-    "authorizeTransaction", "AutoAimingConfig", "AutoAimingRangeConfig", "AVHttpRequest",
-    "BattlEye", "BeKilledOpenID", "blockInstantTravel", "blockRuntimeCheats", "blockWebAttacks",
-    "BPCalFinalDamage", "BPDie", "BPNotifyStartDying", "BPOnMissPlayerDamageRecord",
-    "BPReceiveDamage", "BPReceiveMeleeDamage", "BPReceivePointDamage", "BPReceiveRadialDamage",
-    "BPTakeDamage", "BTLaunchMoveSpeedCurve", "Budget.AlwaysTickFalloffAggression",
-    "Budget.BudgetPressureSmoothingSpeed", "Budget.WorkUnitSmoothingSpeed",
-    "bRestrictSpeedToExpected", "calculateCRC32", "calculatePlayDuration", "CC_MD5state_st",
-    "CDUnknownFunctionPointerType", "CFAbsoluteTimeGetCurrent", "checkActivationStatus",
-    "checkCodeIntegrity", "checkCodeSignature", "checkDebuggerPresent", "checkFileModification",
-    "checkFileSignature", "checkForPatches", "checkGameplayParticipation",
-
-    // --- المصدر 3: التحقق من التكامل ---
-    "checkImportTable", "checkIntegrity", "checkLicense", "checkMemorySignature", "checkModIntegrity",
-    "checkPlayerActivity", "checkReceipt", "checkRegisteredCanOpenURLScheme",
-    "checkResponseTime", "checkSectionPermissions", "checkServerCertificate",
-    "checkServerSpeedOverLimit", "checkSHA256Signature", "checkSuspiciousModules",
-    "checkSystemTime", "checkValidation", "ClientMoveSpeedCheck", "Client netspeed verification",
-    "ClientTimeSpeedCheck", "Cloudflare", "codeSigning", "CONTROL_FLOW_MASTER", "crash logs",
-    "crashReportDirectory", "CRITICAL: IMSDK offsets", "CuResFile", "data_encryption_layer",
-    "dataReportUrl", "decryptNetworkData", "DeepLearningShotPrediction", "DEP_enforcement",
-    "deriveEncryptionKey", "detectAndMitigateDDOS", "detectAFKPattern", "detectBotBehavior",
-    "detectCheat", "detectCodeCaves", "detectCodeInjection", "detectDebuggerAttached",
-    "detectEmulatorOrRoot", "detectIdlePlayer", "detectInactiveSession", "detectInlinePatches",
-    "detectMITM", "detectMemoryTampering", "detectTampering", "detectTimeHacks", "DevEditor",
-    "DiscardUnreachable", "DoSuddenStop", "drawDebugCollisionSegments", "DynamicBattleRankInfo",
-    "EasyAntiCheat",
-
-    // --- المصدر 4: الحماية والتشفير ---
-    "emailProtection", "EmoteData", "Emulator", "EmulatorJailbreakRootDetection",
-    "enableCrashReporter", "encryptNetworkData", "enforceActivityPolicy",
-    "enforceEncryptionPolicy", "enforceGravityLimits", "enforceMinimumActivity", "EnergyEndLv",
-    "EnergyEndTime", "EnergyItemUse", "EnergyLvTimeInfo", "EnergyRecoveryCount",
-    "EnergyRecoveryLvTimeInfo", "EnergyRecoveryMax", "EnergyRecoveryMin", "EnergyRecoveryTotal",
-    "EnergyRunFastTime", "EnergyStartLv", "EnergyStartTime", "EnemyInterphoneTime",
-    "EquipedShootWeapon", "EquipedWeapon", "establishSecureChannel", "EVOFlag_FlyOver",
-    "EVOFlag_JumpOver", "EVOFlag_None", "EVOFlag_Stop", "EVOFlag_VelocityUpdate",
-    "Exception%@simplePing:didStartWithAddress:PingThreadGNLLogServiceGNLReportManager",
-    "F5Networks", "FACEITAntiCheat", "FBSDKLoginEventLogging", "FClientMoveSpeedCheck",
-    "FClientTimeSpeedCheck", "FIGHT_AttackerPawn", "FIGHT_FightingPawn", "FIGHT_IsBeAttacking",
-    "FinishAvoidObstacle", "flagTampering", "FRealtimeMoveSpeedCheck",
-    "FShovelAntiCheat::_VerifyShovelData: Avg speed verify failed", "function_prologue",
-    "GameLuaDevEditorLuaFeatureUnitTestBasicPlayerCharacterComponent", "GameLuaMod",
-    "GameLuaModLibraryGamePlayFeatureTeleportPawnFeature", "GameModePlayerBattleResultData",
-    "GCloudVoice", "GCloudVoiceEngine",
-
-    // --- المصدر 5: حماية الصوت والشبكة ---
-    "GCloudVoiceEngine integrity", "GCloudVoiceHttp", "GCloudVoice network checks",
-    "generateLiveReport", "generateSessionKey", "generateSignature", "GenerateSignature",
-    "getenv", "gettimeofday", "ghost_report_blocker", "GrenadeDamageRecordItem",
-    "GSDKInnerRealTimeDetect", "GSDKInGameBlockInvoke", "GSDKInGameSystem", "GSDKLoginEvent",
-    "GSDKReportEvent", "GSDKUdpDetect", "GSDKUdpGetSendData", "GSDKUdpHeavy", "GSDKUdpSendV6",
-    "GSDKUdpStartTest", "GSDKUdpStartTest2", "guardFunctionEntry", "guardFunctionExit",
-    "hasPendingCrashReport", "HBCheck", "HeadShoot", "HeadShootCount", "heap_canary_check",
-    "heapProtectionEnable", "hideStringsFromReverse", "hookEnable", "Hooked_ACH", "iAppVersion",
-    "iCPUName", "iDevHwModel", "iDevIDFV", "iDevSysVer", "IFSArchiveInterface", "ignoreCommands",
-    "IgnoreCommands", "ignoreSignature", "IgnoreSignature", "ilc_close_pipe", "ilc_open_pipe",
-    "IMSDKAuthResult", "Imperva", "implementEndToEndEncryption", "implementPerfectForwardSecrecy",
-    "InjuryParticleAttachOffset", "initWithApplicationIdentifier", "initWithBundle",
-    "input_injection_detection", "integrityReport", "INTEGRITY_CORE", "internalEventLogger",
-
-    // --- المصدر 6: المنطق الداخلي للعبة ---
-    "internal.eventLogger", "iScreenCaptured:%d", "IsAttacked", "IsBlocked", "IsBlockedFront",
-    "IsCastSkillBlocked", "IsDeath", "IsEmergency", "IsEquipResEnough", "IsGrenadeResEnough",
-    "IsGunPartResEnough", "IsGunResEnough", "IsInBlueCircle", "IsInFightingState",
-    "IsInHighestPriorityHoldState", "IsInWhiteCircle", "IsInWater", "IsMeleeResEnough",
-    "IsMoveBlocked", "IsNearDeath", "IsNeedSuicide", "IsObstacleDetected", "IsOnSquare",
-    "IsPathExist", "IsPrecipiceDetected", "IsReloading", "IsResEnough",
-    "IsTargetNearBossContainer", "IsUnderGround", "iUUID", "JIT_protection", "Jump_Velocity",
-    "KillerAIDisplayUID", "KillerType", "KillerWeaponID", "KillCount", "KniveDamage",
-    "KniveDamageRecordItem", "KnockNumber", "KnockOutData", "lagcomp.CustomMoveScale",
-    "lagcomp.FollowWalkScale", "lagcomp.highprecisionbasescaleH", "lagcomp.highprecisionbasescaleV",
-    "lagcomp.highprecisionspeedscale_h", "lagcomp.highprecisionspeedscale_shakeMax",
-    "lagcomp.highprecisionspeedscale_v", "lagcomp.highprecisionspeedscale_vshake",
-    "lagcomp.HitBoxInVehicleScaleV", "lagcomp.MuzzleDeviationScaleVehicleSpeed",
-    "LastAttackedMeActor", "LimbsShoot", "LimbsShootCount", "loadPendingCrashReportData",
-    "logAIPerception", "logErrorQueues", "LogErrorQueues",
-
-    // --- المصدر 7: Lua و المراقبة ---
-    "logPathFollowing", "logReportUrl", "logSecurityEvents",
-    "LuaActivityCommercializeGamePlayPetPetExhibitFeature",
-    "LuaDevGMLuaFeaturePlayerCharacterFlyFeature",
-    "LuaModBaseModGamePlayComponentWeatherComponent",
-    "LuaModBaseModGamePlayFeatureCampPlayerCharacterCampFeature", "LuaModProtection",
-    "LuaObfuscator", "LuaRuntime", "mach_absolute_time", "mach_wait_until",
-    "measureEngagementTime", "memory_barrier", "memoryProtectionEnable", "memory_safe_execution",
-    "MEMORY_SENTINEL", "methodSignatureForSelector", "Microsoft Commercial Code Signing",
-    "Microsoft Individual Code Signing msCodeCom", "Microsoft Trust List Signing",
-    "MissPlayerDamageRecord", "monitorCampPosition", "monitorEnvironmentMods", "monitorFileAccess",
-    "monitorMalware", "monitorNetworkActivity", "monitorPlayerBehavior", "monitorSystemCalls",
-    "monitorUserPresence", "MotorBikeDriverLeaningLowSpeedAnim", "MoveAntiCheat Strategy3",
-    "MoveSpeedCurve", "MoveSpeedKMH", "MoveSpeedLimiterCheckFailed", "MoveSpeedParameter",
-    "multi_layer_defense", "nanosleep", "NeuralNetworkShotPrediction", "NetMoveSpeedParameter",
-    "NSDate", "NtGlobalFlag", "OnActorBump", "OnCharacterAimModeChanged", "OnListenerRegistered",
-    "OnListenerUnregistered", "OnListenerUpdated",
-
-    // --- المصدر 8: معالجة البيانات والتقارير ---
-    "OnMissPlayerDamageRecord", "OnMoveCompleted", "overrideSignatureCheck", "PathExist",
-    "PayloadProtection", "pattern_detection", "pattern_recognition_trigger", "PerformConditionCheck",
-    "PerformConditionCheckAI", "performKernelScan", "PickupCount", "PLCrash integration",
-    "PLCrashReporter", "PLCrashReporter init", "PLCrashReporter init (IMSDK integration)",
-    "PlayerCar", "PlayerCarSpeedAvg", "PlayerCarSpeedMax", "PlayerCharacterComponent",
-    "PlayerCreepMoveDis", "PlayerCreepMoveTime", "PlayerDriveMoveDis", "PlayerDriveMoveTime",
-    "PlayerKillAI", "PlayerKillAIInfo", "PlayerMoveDis", "PlayerRunMoveDis", "PlayerRunMoveTime",
-    "PlayerSpeedAvg", "PlayerSpeedMax", "PlayerSquatMoveDis", "PlayerSquatMoveTime",
-    "pointer_authentication", "preventDebugging", "preventDuping", "preventIdleExploit",
-    "preventReplayAttacks", "processCommands", "ProcessCommands", "ProductVersion",
-    "profile_shield", "protectAssets", "protectFromDDOS", "protectLuaFeatures", "protectNetwork",
-    "ptrace", "pthread_yield", "purgePendingCrashReport", "qos_cnt", "qos_filt", "qos_%d",
-    "Radware", "randomness_analysis_aim", "RealtimeMoveSpeedCheck", "RecoveryCount", "RecoveryMax",
-
-    // --- المصدر 9: الإبلاغ والتحقق ---
-    "RecoveryMin", "RecoveryTotal", "remoteConfigUrl", "removeSingletonObjectForUnitTest",
-    "RepVehicleAttachment", "ReportAimFlow", "ReportAttackFlow", "ReportCircleFlow",
-    "ReportEventstopPing", "ReportGameBaseInfo", "ReportGameEndFlow", "ReportGameSetting",
-    "ReportGameStartFlow", "ReportHurtFlow", "ReportJumpFlow", "ReportMrpcsFlow",
-    "ReportPlayerKillFlow", "ReportSecAttackFlow", "ReportSpeedException", "ReportVerifyInfoFlow",
-    "ReportVoiceTeamCreate", "ReportVoiceTeamQuit", "resetHandlers", "return_sequence",
-    "RicochetAntiCheat", "root_alert:%s", "ROP_prevention", "runIntegrityTests",
-    "RuntimeApplicationSelfProtection", "sandbox_enforcement", "SATANIC_STACK_GUARD",
-    "scanAerialCheats", "scanMemoryForHooks", "scanTeleportAnomalies", "sched_yield", "sc_dlp",
-    "sc_idle", "sc_protect", "secureHandshake", "secureKeyExchange", "secureSalt", "SecureSalt",
-    "secureTraffic", "secureValidation", "SecureValidation", "self_healing_system",
-    "ServerBulletSpeed", "server response", "setCrashCallbacks", "shadow_protection", "SHA256",
-    "SHA256Hash", "sharedReporter", "sharedReporter (IMSDK crash telemetry)", "ShootDamageTipsStr",
-
-    // --- المصدر 10: التوقيعات والأمان ---
-    "signatureForGroupPro", "SignatureCheck", "signData", "singletonNameC", "sleep",
-    "SpecialWeaponRecord", "SpeedUp", "SpeedUpParticle", "stack_canary_check", "stack_frame_setup",
-    "stackProtectionEnable", "Stamping", "stat", "Sucuri", "SysVersion", "syscall_intercept",
-    "sysctl", "tamperDetection", "TamperDetection", "TargetEnemyActor", "TargetEnemyIsAI",
-    "TargetEnemyVehicle", "TargetLerpSpeedHorizontalCurve", "TargetLerpSpeedVerticalCurve",
-    "target_lock_cheat_detection", "tcj_protect", "TeammateInterphoneTime", "TeammateList",
-    "terminateIdleConnection", "ThrowCount", "timeStamping", "timestamping", "TPAT",
-    "TPATErrorQueue", "trackResourceUsage", "trackUserInteraction", "triggerbot_detection",
-    "ts2,r:%d", "UCreativeModeBlueprintLibrary::SetSpeedOverLimit",
-    "ULagCompensationComponentBase::CustomMoveScale",
-    "ULagCompensationComponentBase::EnableHighPrecisionBaseScaleH",
-    "ULagCompensationComponentBase::EnableHighPrecisionBaseScaleV",
-    "ULagCompensationComponentBase::EnableHighPrecisionSpeedHScale",
-    "ULagCompensationComponentBase::EnableHighPrecisionSpeedShakeHScale",
-    "ULagCompensationComponentBase::EnableHighPrecisionSpeedShakeMax",
-    "ULagCompensationComponentBase::EnableHighPrecisionSpeedShakeVScale",
-    "ULagCompensationComponentBase::EnableHighPrecisionSpeedVScale",
-    "ULagCompensationComponentBase::FollowWalkScale",
-
-    // --- المصدر 11: التحقق من التوافق ---
-    "ULagCompensationComponentBase::HitBoxInVehicleScaleV",
-    "ULagCompensationComponentBase::MuzzleDeviationScaleVehicleSpeed", "UniqueHitCount",
-    "UUAESkillConditionMoveSpeed", "UUAESkillConditionMoveSpeedAxis", "UseCount", "usleep",
-    "validateAndReturnError", "validateAppID", "validateAppLegitimacy", "validateBinaryIntegrity",
-    "validateChecksum", "validateClientAccessToken", "validateContinuousPlay", "validateEnvironment",
-    "validateExecutableHash", "validateExportTable", "validateFacebookReservedURLSchemes",
-    "validateIdentifier", "validateImportTable", "validateLicense", "validateMemoryRegions",
-    "validateMessageIntegrity", "validatePlayer", "validatePlayerActive", "validatePlayerMovement",
-    "validateProtocolVersion", "validatePurchaseReceipt", "validateReceipt", "validateResourceFiles",
-    "validateSessionToken", "validateSignature", "validateURLSchemes", "validateUserSource",
-    "validateWithError", "validateWithOptions", "verifyAppLegitimacy", "verifyBinaryIntegrity",
-    "verifyChecksum", "verifyDigitalSignature", "verifyFunctionHooks", "verifyIntegrity",
-    "verifyLicenseKey", "verifyMessageIntegrity", "verifyPurchase", "verifyReceipt",
-    "verifyResourceFiles", "verifyServerCertificate", "verifySignature", "VerifySignature",
-    "VirtualBox", "VirtualMachine", "VNG", "VNGQueue", "VO_CacheVelocity",
-
-    // --- المصدر 12: المقاييس المتقدمة ---
-    "VO_Duration", "VO_ObstacleCenter", "VO_Obstacles", "VO_OriginLoc", "VO_Step", "VO_Velocity",
-    "voice anti-hook", "Voice anti-hook", "voice engine", "voiceMessageUrl", "voiceReportUrl",
-    "voiceTranslateUrl", "voiceUrl", "WeaponDamageRecord", "writeSectorChecksums",
-    "_AntiCheatLuaCheck", "_EnableObfuscationScan", "_ErrorReportLua", "_FBSDKLoginEventLogging",
-    "_ReportModTamper", "- DoSuddenStop", "- EVOFlag::EVOFlag_FlyOver",
-    "- EVOFlag::EVOFlag_JumpOver", "- EVOFlag::EVOFlag_None", "- EVOFlag::EVOFlag_Stop",
-    "- EVOFlag::EVOFlag_VelocityUpdate", "- FinishAvoidObstacle", "- IsMoveBlocked",
-    "- IsObstacleDetected", "- IsPrecipiceDetected", "- Jump_Velocity", "- VO_CacheVelocity",
-    "- VO_Duration", "- VO_ObstacleCenter", "- VO_Obstacles", "- VO_OriginLoc", "- VO_Step",
-    "- VO_Velocity", "a:%d,r:%d", "cs_qa_stat", "hb_loop", "iScreenCaptured:%d",
-    "msg_box_dismiss:sys:msg_box_id=%d|btn_id=%d", "msgbox:%d|%s|%s|%s|%s|%s|%d|%d",
-
-    // --- المصدر 13: السجلات والتنسيقات ---
-    "n:%s,t:%s,id:%s", "root_alert:%s", "sc_dlp", "sc_idle", "ts2,r:%d", "%s*** %d===%c",
-    "%s*** GSDKReportEvent eventName:", "%s*** recv len failed, echotime:%d", "%s*** send===%d===",
-    "GSDKUdpTest getSendData", "GSDKUdpTest Heavy",
-    "GSDKUdpTest startUdpTest:Sport:Pcntx00:Frequenc",
-    "GSDKUdpTest startUdpTest:Sport:Pcntx00:Frequency", "GSDKUdpTest sendV6Data:Data",
-    "GSDKUdpDetect isUDPConnect:Port:", "anti_sp2s", "force_built_in_ip", "FightbackEnemyActor",
-    "AllocateSectorChecksums", "AllocateSectorChecksumsForEntry", "WriteSectorChecksums",
-    "DescriptionWithProjection", "DescriptionWithTrace", "inc_id:%d", "DeadCircleIndex",
-    "anti_false_report", "anti_ghost_report", "report_cooldown", "report_scoring",
-    "report_system_init", "report_validation", "player_report_handler", "prevent_scoli_report",
-    "protect_my_profile", "ai_report_analyzer", "anomaly_detection", "behavioral_pattern",
-    "integrity_checker", "tamper_detection", "self_healing_system", "quantum_protection",
-    "temporal_shield", "neural_defense", "blockchain_validator", "antiDebugEnable",
-    "antiTamperEnable",
-
-    // --- المصدر 14: التحقق الأمني الأساسي ---
-    "BeingDebugged", "monitoring", "detection", "checkPlayerActivity", "detectIdlePlayer",
-    "verifyChecksum", "monitorNetworkActivity", "validateEnvironment", "enableCrashReporter",
-    "generateLiveReport", "validateIdentifier", "verifyPurchase", "checkIntegrity",
-    "detectTampering", "monitorSystemCalls", "authenticateSession", "stack_canary_check",
-    "control_flow_integrity", "stack_frame_setup", "logSecurityEvents", "trackResourceUsage",
-    "checkSystemTime", "generateSecurityLog", "memory_barrier", "return_sequence",
-    "function_prologue", "checkFileModification", "encryptNetworkData", "preventDebugging",
-    "validateBinaryIntegrity", "detectDebuggerAttached", "verifyDigitalSignature",
-    "authenticateLicenseKey", "establishSecureChannel", "encryptNetworkData", "decryptNetworkData",
-    "secureHandshake", "verifyServerCertificate", "validateSessionToken", "authenticateConnection",
-    "generateSessionKey", "deriveEncryptionKey", "implementPerfectForwardSecrecy",
-    "preventReplayAttacks", "detectMITM", "verifyMessageIntegrity", "signData", "verifySignature",
-    "protectAgainstEavesdropping", "implementEndToEndEncryption", "secureKeyExchange",
-    "validateProtocolVersion", "enforceEncryptionPolicy", "heap_canary_check",
-    "control_flow_integrity", "pointer_authentication", "memory_safe_execution",
-
-    // --- المصدر 15: حماية الذاكرة والعمليات ---
-    "code_signing_verify", "runtime_integrity_check", "exception_handler_setup",
-    "signal_handler_protect", "syscall_intercept", "API_hook_detect", "JIT_protection",
-    "ROP_prevention", "ASLR_enforcement", "DEP_enforcement", "sandbox_enforcement",
-    "verifyBinaryIntegrity", "checkFileModification", "detectTampering", "validateExecutableHash",
-    "checkCodeSignature", "verifyResourceFiles", "detectDebuggerAttached", "checkDebuggerPresent",
-    "preventDebugging", "checkSuspiciousModules", "scanMemoryForHooks", "detectInlinePatches",
-    "checkFunctionHooks", "validateImportTable", "verifyExportTable", "checkSectionPermissions",
-    "validateMemoryRegions", "detectCodeCaves", "checkForPatches", "verifyChecksum",
-    "calculateCRC32", "validateMD5Hash", "checkSHA256Signature", "verifyDigitalSignature",
-    "validateLicense", "checkActivationStatus", "verifyPurchaseReceipt", "authenticateLicenseKey",
-    "checkPlayerActivity", "detectIdlePlayer", "monitorUserPresence", "verifyPlayerActive",
-    "trackUserInteraction", "validatePlayerMovement", "checkGameplayParticipation",
-    "detectInactiveSession", "terminateIdleConnection", "enforceActivityPolicy",
-    "measureEngagementTime", "calculatePlayDuration", "validateContinuousPlay", "detectAFKPattern",
-    "preventIdleExploit", "monitorInputFrequency", "checkResponseTime",
-
-    // --- المصدر 16: التحقق من الوقت والاستجابة ---
-    "verifyRealTimeAction", "enforceMinimumActivity", "detectBotBehavior", "enableCrashReporter",
-    "generateLiveReport", "setCrashCallbacks", "hasPendingCrashReport",
-    "loadPendingCrashReportData", "purgePendingCrashReport", "validateIdentifier", "validateAppID",
-    "validateURLSchemes", "checkRegisteredCanOpenURLScheme", "validateFacebookReservedURLSchemes",
-    "validateRequiredClientAccessToken", "validateAndReturnError", "validateWithError",
-    "validateWithOptions", "verifyPurchase", "verifyReceipt", "validateReceipt", "checkReceipt",
-    "detectMemoryTampering", "detectCodeInjection", "reportSuspiciousActivity", "reportPlayer",
-    "monitorSystemCalls", "monitorFileAccess", "monitorNetworkActivity", "checkIntegrity",
-    "checkFileSignature", "checkMemorySignature", "authenticateSession", "authenticateUser",
-    "authenticateDevice", "authorizeTransaction", "authorizeAccess", "securityCheck",
-    "protectionValidate", "guardFunctionEntry", "guardFunctionExit", "stackProtectionEnable",
-    "heapProtectionEnable", "memoryProtectionEnable", "report_scoring", "pattern_detection",
-    "credibility_check", "preventive_block", "rate_limiting", "challenge_system",
-    "ai_report_analyzer", "behavioral_pattern", "anomaly_detection", "crypto_layer_1",
-    "crypto_layer_2",
-
-    // --- المصدر 17: أنظمة الحماية المتقدمة ---
-    "crypto_layer_3", "integrity_checker", "tamper_detection", "self_healing_system",
-    "quantum_protection", "temporal_shield", "neural_defense", "blockchain_validator",
-    "click_capt", "PlayerNetStats، GameModeLikeResultData",
-    "UBulletTrackComponent::CalculateRecoveryTarget_Tss_Failed_By_OwnerCharacter_Is_Null",
-    "UBulletTrackComponent::CalcDeviationTarget_Tss_Return_By_OwnerCharacter_Is_Null",
-    "UBulletTrackComponent::CalcDeviationTarget_Tss_Return_By_OwnerShootWeapon_Is_Null",
-    "UBulletTrackComponent::CalcDeviationTarget_Tss_Return_By_PawnMovementComponent_Is_Null",
-    "UBulletTrackComponent::CalcDeviationTarget_Tss_Return_By_Plc_Is_Null",
-    "UBulletTrackComponent::CalcDeviationTarget_Tss_Return_By_PlcIsLocalControllerIsFalse",
-    "UBulletTrackComponent::CalcDeviationTarget_Tss_Return_By_STPlc_Is_Null",
-    "UBulletTrackComponent::HandleGetOwnerActor_Return_By_OwnerActor_IsNull",
-    "UBulletTrackComponent::OnEquip_Return_By_OwnerShootWeapon_Is_Null",
-    "UBulletTrackComponent::OnEquip_Return_By_OwnerShootWeapon_Is_Null_2",
-    "UBulletTrackComponent::OnUpdate_Return_By_OwnerCharacter_Is_Null",
-    "UBulletTrackComponent::OnUpdate_Return_By_OwnerPlayerController_Is_Null",
-    "UBulletTrackComponent::OnUpdate_Return_By_OwnerShootWeapon_Is_Null",
-    "UBulletTrackComponent::UpdateRecoilFactor_Tss_Failed_By_OwnerCharacter_Is_Null",
-    "USpecialMoveBaseObj::SpecialMoveServerCheckClientError"
-};
-
-// ============================================================================
-// الدوال المساعدة (Helper Functions)
+// 1. محرك الذكاء والتحليل (AI Engine)
 // ============================================================================
 
-// دالة المقارنة لاستخدامها في الترتيب (qsort) والبحث (bsearch)
-int compareStrings(const void *a, const void *b) {
-    return strcmp(*(const char **)a, *(const char **)b);
+// دالة فحص الرموز (لحماية تفعيلات الفل هاك)
+static BOOL IsDangerousSymbol(const char *symbol) {
+    if (!symbol) return NO;
+    size_t len = strnlen(symbol, 256); // حماية ضد الكراش
+    if (len == 0 || len >= 256) return NO;
+
+    // كلمات مفتاحية للتفعيلات التي تبحث عنها اللعبة
+    // نستخدم التجزئة لتجنب كشف الكلمات في ملفنا
+    if (strcasestr(symbol, "Aim") && strcasestr(symbol, "Bot")) return YES;
+    if (strcasestr(symbol, "Magic") && strcasestr(symbol, "Bullet")) return YES;
+    if (strcasestr(symbol, "Recoil")) return YES;
+    if (strcasestr(symbol, "ESP")) return YES;
+    if (strcasestr(symbol, "Wall")) return YES;
+    if (strcasestr(symbol, "Hook")) return YES;
+    
+    return NO;
 }
 
-// دالة البحث السريع (Binary Search)
-// هذه الدالة سريعة جداً وتمنع الـ Lag في اللعبة
-static BOOL isStringBlocked(const char *input) {
-    if (!input || !sortedBlockedList) return NO;
+// دالة فحص الملفات
+static int AI_AnalyzeRisk(const char *path) {
+    if (!path) return 0;
+    size_t len = strnlen(path, 1024);
+    if (len == 0 || len >= 1024) return 0;
     
-    // استخدام bsearch للبحث السريع (O(log n))
-    void *result = bsearch(&input, sortedBlockedList, sortedListSize, sizeof(char *), compareStrings);
-    return (result != NULL);
+    @try {
+        // فحص سريع للمسارات الخطيرة
+        if (strcasestr(path, "Cydia") || strcasestr(path, "Substrate") || 
+            strcasestr(path, "Tweak") || strcasestr(path, "apt/")) {
+            return 100;
+        }
+        return 0;
+    } @catch (NSException *e) { return 0; }
 }
 
 // ============================================================================
-// تعريف الدوال الأصلية
+// 2. المؤشرات الأصلية
 // ============================================================================
-static int (*orig_strcmp)(const char *, const char *);
-static char* (*orig_strstr)(const char *, const char *);
+static int (*orig_stat)(const char *, struct stat *);
+static int (*orig_dladdr)(const void *, Dl_info *);
+static int (*orig_sysctl)(int *, u_int, void *, size_t *, void *, size_t);
+static void* (*orig_dlopen)(const char*, int);
+static void* (*orig_dlsym)(void *, const char *);
 
 // ============================================================================
-// الهوك (Hooks)
+// 3. الهوكات النشطة (Active Protection)
 // ============================================================================
 
-// هوك دالة strcmp: تستخدم عندما يتحقق التطبيق من تطابق نص كامل
-int hooked_strcmp(const char *s1, const char *s2) {
-    // 1. الحماية من المؤشرات الفارغة (منع الكراش)
-    if (!orig_strcmp) return 0;
-    if (!s1 || !s2) return orig_strcmp(s1, s2);
-    
-    // 2. التحقق من القائمة المحظورة
-    // إذا كان s1 هو "Cydia" واللعبة تقارنه بـ "Cydia"، سنرجع 1 (غير متطابق)
-    if (isStringBlocked(s1) || isStringBlocked(s2)) {
-        // نرجع -1 (أو أي رقم غير الصفر) لنقول للعبة: "النصان غير متطابقين"
+// [هام] هوك dlsym: يعمي اللعبة عن رؤية دوال الهاك
+void* hooked_dlsym(void *handle, const char *symbol) {
+    if (IsDangerousSymbol(symbol)) {
+        return NULL; // الدالة غير موجودة (تمويه)
+    }
+    return orig_dlsym(handle, symbol);
+}
+
+// هوك الهوية: إخفاء الفريم وورك
+int hooked_dladdr(const void *addr, Dl_info *info) {
+    int ret = orig_dladdr(addr, info);
+    if (ret != 0 && info && info->dli_fname) {
+        if (strstr(info->dli_fname, "GCloudCore") || strstr(info->dli_fname, HIDDEN_DYLIB_NAME)) {
+            info->dli_fname = "/usr/lib/libSystem.B.dylib";
+            info->dli_sname = "mach_msg"; 
+        }
+    }
+    return ret;
+}
+
+// هوك الملفات
+int hooked_stat(const char *path, struct stat *buf) {
+    if (AI_AnalyzeRisk(path) > 50) {
+        errno = ENOENT;
         return -1;
     }
-    
-    return orig_strcmp(s1, s2);
+    return orig_stat(path, buf);
 }
 
-// هوك دالة strstr: تستخدم عندما يبحث التطبيق عن كلمة داخل نص طويل
-char* hooked_strstr(const char *haystack, const char *needle) {
-    // 1. الحماية من المؤشرات الفارغة
-    if (!orig_strstr) return NULL;
-    if (!haystack || !needle) return orig_strstr(haystack, needle);
-    
-    // 2. التحقق مما إذا كانت الكلمة المبحوث عنها (needle) محظورة
-    if (isStringBlocked(needle)) {
-        // إذا كانت اللعبة تبحث عن "Substrate" في قائمة الملفات، نرجع NULL
-        // هذا يعني "لم يتم العثور على الكلمة"
-        return NULL;
+// هوك منع تحميل الحمايات (Anti-Cheat Modules)
+void* hooked_dlopen(const char *path, int mode) {
+    if (path) {
+        if (strcasestr(path, "TenProtect") || strcasestr(path, "MTP") || strcasestr(path, "ACE")) {
+            return NULL; 
+        }
     }
-    
-    return orig_strstr(haystack, needle);
+    return orig_dlopen(path, mode);
+}
+
+// هوك الكيرنل (Anti-Debug)
+int hooked_sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp, size_t newlen) {
+    if (namelen >= 2 && name && name[0] == CTL_KERN && name[1] == KERN_PROC) {
+        int ret = orig_sysctl(name, namelen, oldp, oldlenp, newp, newlen);
+        if (ret == 0 && oldp && oldlenp && *oldlenp >= sizeof(struct kinfo_proc)) {
+            struct kinfo_proc *proc = (struct kinfo_proc *)oldp;
+            if ((proc->kp_proc.p_flag & 0x800) != 0) { // P_TRACED
+                proc->kp_proc.p_flag &= ~0x800;
+            }
+        }
+        return ret;
+    }
+    return orig_sysctl(name, namelen, oldp, oldlenp, newp, newlen);
 }
 
 // ============================================================================
-// دالة التشغيل الآمن (Constructor)
+// 4. نظام التحميل (Loader System)
+// ============================================================================
+static void LoadHiddenModule() {
+    Dl_info info;
+    dladdr((const void*)&LoadHiddenModule, &info);
+    if (!info.dli_fname) return;
+
+    NSString *currentLibPath = [NSString stringWithUTF8String:info.dli_fname];
+    NSString *frameworkPath = [currentLibPath stringByDeletingLastPathComponent];
+    // المسار: GCloudCore.framework/Resources/CoreData.dylib
+    NSString *targetPath = [NSString stringWithFormat:@"%@/Resources/%s", frameworkPath, HIDDEN_DYLIB_NAME];
+    
+    if ([[NSFileManager defaultManager] fileExistsAtPath:targetPath]) {
+        void *handle = dlopen([targetPath UTF8String], RTLD_NOW);
+        if (handle) {
+            NSLog(@"[GCloudCore] ✅ Core Module Loaded Successfully.");
+        }
+    }
+}
+
+// ============================================================================
+// 5. التشغيل
 // ============================================================================
 __attribute__((constructor))
-static void SafeInit() {
-    // استخدام dispatch_once لضمان التنفيذ مرة واحدة فقط بأمان تام
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        NSLog(@"[Shield] 🛡️ Initializing Protection System...");
-
-        // 1. إعداد القائمة للبحث السريع (Binary Search Setup)
-        // نسخ القائمة الأصلية إلى مصفوفة قابلة للتعديل للترتيب
-        sortedListSize = sizeof(rawBlockedStrings) / sizeof(char *);
-        sortedBlockedList = malloc(sortedListSize * sizeof(char *));
-        
-        if (sortedBlockedList) {
-            // نسخ البيانات
-            memcpy(sortedBlockedList, rawBlockedStrings, sortedListSize * sizeof(char *));
-            
-            // ترتيب القائمة أبجدياً لتفعيل البحث الثنائي السريع
-            qsort(sortedBlockedList, sortedListSize, sizeof(char *), compareStrings);
-            NSLog(@"[Shield] ✅ Database loaded with %zu entries.", sortedListSize);
-        }
-
-        // 2. ربط الدوال (Hooking)
-        struct rebinding rebinds[] = {
-            {"strcmp", (void *)hooked_strcmp, (void **)&orig_strcmp},
-            {"strstr", (void *)hooked_strstr, (void **)&orig_strstr}
-        };
-
-        int err = rebind_symbols(rebinds, 2);
-        if (err == 0) {
-            NSLog(@"[Shield] ✅ Hooks activated successfully (No-JB Mode).");
-        } else {
-            NSLog(@"[Shield] ❌ Failed to activate hooks (Error: %d).", err);
-        }
+static void InitFramework() {
+    struct rebinding rebinds[] = {
+        {"dlsym", (void *)hooked_dlsym, (void **)&orig_dlsym},
+        {"dladdr", (void *)hooked_dladdr, (void **)&orig_dladdr},
+        {"stat", (void *)hooked_stat, (void **)&orig_stat},
+        {"sysctl", (void *)hooked_sysctl, (void **)&orig_sysctl},
+        {"dlopen", (void *)hooked_dlopen, (void **)&orig_dlopen}
+    };
+    rebind_symbols(rebinds, 5);
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        LoadHiddenModule();
     });
 }
+
