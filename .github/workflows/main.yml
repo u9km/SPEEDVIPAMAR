@@ -1,4 +1,4 @@
-name: Build Tweak No-JB
+name: Build Framework
 
 on:
   push:
@@ -12,42 +12,47 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1. تثبيت Theos يدوياً
+      # 1. تثبيت الاعتمادات الضرورية (تمت إضافة ldid لحل مشكلتك)
+      - name: Install Dependencies
+        run: |
+          brew install ldid
+          brew install make
+
+      # 2. تثبيت Theos
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
 
-      # 2. تثبيت SDKs (مع تنظيف المجلد القديم)
+      # 3. تثبيت SDKs (مع تنظيف المجلد القديم لتجنب الأخطاء)
       - name: Setup SDKs
         run: |
           rm -rf ~/theos/sdks
           git clone --depth 1 https://github.com/theos/sdks.git ~/theos/sdks
           rm -rf ~/theos/sdks/.git
 
-      # 3. تحميل مكتبة fishhook
+      # 4. تحميل مكتبة fishhook
       - name: Download Dependencies
         run: |
           curl -o fishhook.c https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.c
           curl -o fishhook.h https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.h
 
-      # 4. بناء الأداة (مع تجاوز التوقيع)
-      - name: Build Package
+      # 5. بناء الفريم وورك (مع تجاهل التوقيع الإجباري)
+      - name: Build Framework
         run: |
-          # نقوم بتعطيل التوقيع هنا لتجاوز خطأ ldid
           export CODE_SIGNING_REQUIRED=NO
-          make package FINALPACKAGE=1 || true
-          
-      # 5. استخراج ملف dylib المطلوب فقط (للحقن)
-      - name: Prepare Dylib
-        run: |
-          # نبحث عن ملف dylib الناتج ونجهزه للرفع
-          mkdir -p build_output
-          find .theos/obj/debug -name "*.dylib" -exec cp {} build_output/ \;
+          make FINALPACKAGE=1
 
-      # 6. رفع ملف dylib الصافي
-      - name: Upload Dylib
+      # 6. تجهيز الفريم وورك للرفع (خطوة معدلة لتناسب المجلدات)
+      - name: Prepare Artifact
+        run: |
+          mkdir -p build_output
+          # نسخ مجلد الفريم وورك بالكامل بدلاً من البحث عن dylib فقط
+          cp -r .theos/obj/debug/GCloudCore.framework build_output/
+
+      # 7. رفع الملف الناتج
+      - name: Upload Framework
         uses: actions/upload-artifact@v4
         with:
-          name: SecurityShield_Dylib
-          path: build_output/*.dylib
+          name: GCloudCore_Framework
+          path: build_output/GCloudCore.framework
