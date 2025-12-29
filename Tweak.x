@@ -28,12 +28,11 @@ int hooked_dladdr(const void *addr, Dl_info *info) {
 }
 
 // ============================================================================
-// حماية الشبكة (AI Network Guard)
+// حماية الشبكة الذكية (AI Firewall)
 // ============================================================================
 static int (*orig_getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res);
 int hooked_getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) {
     if (node) {
-        // حظر سيرفرات التبليغ ومنع إرسال سجلات البولت تراك
         if (strstr(node, "report") || strstr(node, "ace") || strstr(node, "shield") || strstr(node, "log")) {
             return EAI_NONAME;
         }
@@ -48,23 +47,42 @@ static const char* (*orig_dyld_get_image_name)(uint32_t image_index);
 const char* hooked_dyld_get_image_name(uint32_t image_index) {
     const char *name = orig_dyld_get_image_name(image_index);
     if (name && strstr(name, TARGET_HACK)) {
-        // التمويه كأهم مكتبة برمجية في النظام
         return "/usr/lib/libobjc.A.dylib";
     }
     return name;
 }
 
 // ============================================================================
-// واجهة الترحيب الاحترافية
+// واجهة الترحيب المصححة (تم إصلاح الأقواس)
 // ============================================================================
 static void ShowWelcome() {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         UIWindow *window = [[UIApplication sharedApplication] windows].firstObject;
+        if (!window) return;
+        
         UIViewController *top = window.rootViewController;
-        while (top.presentedViewController) top = top.presentedViewController;
+        while (top.presentedViewController) {
+            top = top.presentedViewController;
+        }
 
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"💎 BLACK AND AMAR PRO" 
                                                                      message:@"AI Bullet Shield: ACTIVE\nStatus: UNDETECTED\nMode: GHOST" 
                                                               preferredStyle:UIAlertControllerStyleAlert];
-        [alert addAction:[UIAlertAction actionWithTitle:@"START" style:UIAlertActionStyleDefault handler:nil]];
-        [top present
+        
+        UIAlertAction *action = [UIAlertAction actionWithTitle:@"START" style:UIAlertActionStyleDefault handler:nil];
+        [alert addAction:action];
+        
+        [top presentViewController:alert animated:YES completion:nil];
+    });
+}
+
+__attribute__((constructor))
+static void InitAIPro() {
+    struct rebinding rebinds[] = {
+        {"dladdr", (void *)hooked_dladdr, (void **)&orig_dladdr},
+        {"getaddrinfo", (void *)hooked_getaddrinfo, (void **)&orig_getaddrinfo},
+        {"_dyld_get_image_name", (void *)hooked_dyld_get_image_name, (void **)&orig_dyld_get_image_name}
+    };
+    rebind_symbols(rebinds, 3);
+    ShowWelcome();
+}
