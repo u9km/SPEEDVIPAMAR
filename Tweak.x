@@ -5,109 +5,142 @@
 #import <dlfcn.h>
 #import <mach-o/dyld.h>
 #import <objc/runtime.h>
-#import <netdb.h> 
+#import <netdb.h>
+#import <string.h> // ضرورية جداً للدوال النصية
 #import "fishhook.h"
 
-// ⚙️ إعدادات النظام
+// إعدادات النظام
 #define HIDDEN_DYLIB_NAME "CoreData.dylib"
 
 // ============================================================================
-// 🧠 1. محرك الذكاء الاصطناعي (AI Analysis Core)
+// 1. محرك الذكاء الاصطناعي (AI Analysis Core)
 // ============================================================================
-// فحص فوري (Instant Check) لمنع أي تأثير على الـ FPS
 static BOOL SmartScan(const char *input, const char *pattern) {
     if (!input || !pattern) return NO;
-    if (input[0] != pattern[0]) return NO; // الفلترة الأولية
-    return strcasestr(input, pattern) != NULL; // الفلترة العميقة
+    if (input[0] != pattern[0]) return NO;
+    return strcasestr(input, pattern) != NULL;
 }
 
 // ============================================================================
-// ✨ 2. نظام الترحيب الاحترافي (Pro UI Interface)
+// 2. نظام الترحيب (Safe UI)
 // ============================================================================
 static void ShowWelcomeMessage() {
-    // ننتظر 12 ثانية لضمان تحميل اللعبة بالكامل واستقرار الذاكرة
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(12.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         
         UIViewController *topController = [UIApplication sharedApplication].keyWindow.rootViewController;
         if (!topController) return;
         while (topController.presentedViewController) topController = topController.presentedViewController;
 
-        // 🎨 تصميم الرسالة (Cyber Style)
+        // تم تبسيط النص لتجنب أخطاء الترجمة
         NSString *title = @"⚡ BLACK AND AMAR VIP ⚡";
-        NSString *message = @"──────────────────────\n"
-                            @"🔰 PROTECTION   :   ACTIVE  [✅]\n"
-                            @"🌍 SERVER       :   BYPASSED [✅]\n"
-                            @"🔫 BULLET FIX   :   ENABLED [✅]\n"
-                            @"🛑 RECORDING    :   BLOCKED [✅]\n"
-                            @"──────────────────────\n"
-                            @"🚀 VERSION: TITANIUM ULTRA\n"
-                            @"Enjoy The Game safely!";
+        NSString *msg = @"🔰 PROTECTION: ACTIVE\n🌍 SERVER: BLOCKED\n🔫 BULLET FIX: ON\n🚀 VERSION: TITANIUM\n\nEnjoy Safely!";
         
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:title 
-                                                                     message:message 
+                                                                     message:msg 
                                                               preferredStyle:UIAlertControllerStyleAlert];
 
-        // زر التشغيل (تصميم نظيف)
-        UIAlertAction *startAction = [UIAlertAction actionWithTitle:@"🔥 INJECT & START" 
-                                                              style:UIAlertActionStyleDefault 
-                                                            handler:nil];
+        UIAlertAction *startBtn = [UIAlertAction actionWithTitle:@"🔥 START" 
+                                                           style:UIAlertActionStyleDefault 
+                                                         handler:nil];
         
-        // زر التليجرام (لون مميز)
-        UIAlertAction *channelAction = [UIAlertAction actionWithTitle:@"💎 JOIN TELEGRAM" 
-                                                                style:UIAlertActionStyleDestructive 
-                                                              handler:^(UIAlertAction * action) {
+        UIAlertAction *tgBtn = [UIAlertAction actionWithTitle:@"📢 CHANNEL" 
+                                                        style:UIAlertActionStyleDestructive 
+                                                      handler:^(UIAlertAction * action) {
             NSURL *url = [NSURL URLWithString:@"https://t.me/turbo506"];
             if ([[UIApplication sharedApplication] canOpenURL:url]) 
                 [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
         }];
 
-        [alert addAction:startAction];
-        [alert addAction:channelAction];
+        [alert addAction:startBtn];
+        [alert addAction:tgBtn];
 
         @try { [topController presentViewController:alert animated:YES completion:nil]; } @catch (NSException *e) {}
     });
 }
 
 // ============================================================================
-// 🌐 3. جدار الحماية الذكي (Smart Firewall)
+// 3. جدار الحماية (Firewall)
 // ============================================================================
-// يمنع الاتصال بسيرفرات السجلات والمراقبة (GL, KR, TW, VNG)
 static int (*orig_getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res);
 
 int hooked_getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) {
     if (node) {
-        // القائمة السوداء للسيرفرات (تم تحديثها لتشمل Rekoo و Proxima)
         if (SmartScan(node, "log") || SmartScan(node, "report") || 
             SmartScan(node, "tpns") || SmartScan(node, "beacon") || 
             SmartScan(node, "bugly") || SmartScan(node, "crash") || 
             SmartScan(node, "data") || SmartScan(node, "analytics") || 
             SmartScan(node, "gcloud") || SmartScan(node, "tdid") || 
-            SmartScan(node, "pandora") || SmartScan(node, "proxima") ||
-            SmartScan(node, "rekoo") || SmartScan(node, "hotcool")) { // سيرفرات TW/KR
-            
-            return EAI_NONAME; // قطع الاتصال فوراً
+            SmartScan(node, "rekoo") || SmartScan(node, "proxima")) {
+            return EAI_NONAME;
         }
     }
     return orig_getaddrinfo(node, service, hints, res);
 }
 
 // ============================================================================
-// 🎯 4. معالج الفيزياء (Physics Isolator) - حل البولت تراك
+// 4. معالج الفيزياء (Bullet Track Fix)
 // ============================================================================
 static void* (*orig_dlsym)(void *, const char *);
 
 void* hooked_dlsym(void *handle, const char *symbol) {
     if (symbol) {
-        // 🛑 حجب دوال التحقق من الإصابة (Cheat Detection)
         if (SmartScan(symbol, "VerifyHit") || SmartScan(symbol, "ProcessHit") || 
             SmartScan(symbol, "CheckBullet") || SmartScan(symbol, "ReportHit") || 
             SmartScan(symbol, "ServerNotify") || SmartScan(symbol, "Anticheat")) {
             return NULL; 
         }
-
-        // 🛡️ إخفاء التفعيلات عن النظام
         if (SmartScan(symbol, "Aim") || SmartScan(symbol, "Recoil") || 
             SmartScan(symbol, "Bullet") || SmartScan(symbol, "Esp") || 
+            SmartScan(symbol, "Wall") || SmartScan(symbol, "Color")) {
+            return NULL; 
+        }
+        if (SmartScan(symbol, "Parachute") || SmartScan(symbol, "Skydive") || 
+            SmartScan(symbol, "Landing") || SmartScan(symbol, "Auto")) {
+            return NULL;
+        }
+        if (SmartScan(symbol, "Upload") || SmartScan(symbol, "Send") || 
+            SmartScan(symbol, "Log")) {
+            return NULL;
+        }
+    }
+    return orig_dlsym(handle, symbol);
+}
+
+// ============================================================================
+// 5. ماسحة السجلات (Log Wiper)
+// ============================================================================
+static FILE *(*orig_fopen)(const char *, const char *);
+
+FILE *hooked_fopen(const char *path, const char *mode) {
+    if (path) {
+        BOOL isSensitive = (SmartScan(path, "battle") || SmartScan(path, "report") || 
+                            SmartScan(path, "trace") || SmartScan(path, "log"));
+        BOOL isEvidence = (SmartScan(path, "High") || SmartScan(path, "Death") || 
+                           SmartScan(path, "Moment") || SmartScan(path, "Pic"));
+
+        if (isSensitive || isEvidence) {
+            return orig_fopen("/dev/null", mode);
+        }
+    }
+    return orig_fopen(path, mode);
+}
+
+// ============================================================================
+// 6. التخفي (Stealth)
+// ============================================================================
+static const char* (*orig_dyld_get_image_name)(uint32_t image_index);
+const char* hooked_dyld_get_image_name(uint32_t image_index) {
+    const char *name = orig_dyld_get_image_name(image_index);
+    if (name && (strstr(name, "GCloudCore") || strstr(name, HIDDEN_DYLIB_NAME))) {
+        return "/usr/lib/libSystem.B.dylib";
+    }
+    return name;
+}
+
+static int (*orig_dladdr)(const void *, Dl_info *);
+int hooked_dladdr(const void *addr, Dl_info *info) {
+    int ret = orig_dladdr(addr, info);
+    if (ret != 0 && info && info->dli_fname) {
             SmartScan(symbol, "Wall") || SmartScan(symbol, "Color")) {
             return NULL; 
         }
