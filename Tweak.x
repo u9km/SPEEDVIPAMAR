@@ -21,12 +21,16 @@ static BOOL SmartScan(const char *input, const char *pattern) {
 }
 
 // ============================================================================
-// 2. نظام الترحيب (Safe UI)
+// 2. نظام الترحيب (Safe UI) - تم التحديث للإصلاح
 // ============================================================================
 static void ShowWelcomeMessage() {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(12.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         
-        UIViewController *topController = [UIApplication sharedApplication].keyWindow.rootViewController;
+        // --- FIX: استخدام الطريقة الحديثة لجلب النافذة ---
+        UIWindow *window = [[UIApplication sharedApplication] windows].firstObject;
+        UIViewController *topController = window.rootViewController;
+        // ------------------------------------------------
+        
         if (!topController) return;
         while (topController.presentedViewController) topController = topController.presentedViewController;
 
