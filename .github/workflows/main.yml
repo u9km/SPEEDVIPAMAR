@@ -1,4 +1,4 @@
-name: Build Framework
+name: Build Diamond Framework
 
 on:
   push:
@@ -12,13 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1. تثبيت الأدوات
       - name: Install Dependencies
         run: |
           brew install ldid
           brew install make
 
-      # 2. إنشاء Info.plist
       - name: Generate Info.plist
         run: |
           cat <<EOF > Info.plist
@@ -30,62 +28,49 @@ jobs:
               <string>GCloudCore</string>
               <key>CFBundleIdentifier</key>
               <string>com.tencent.gcloud.core</string>
-              <key>CFBundleExecutable</key>
-              <string>GCloudCore</string>
               <key>CFBundlePackageType</key>
               <string>FMWK</string>
               <key>CFBundleShortVersionString</key>
-              <string>2.3.0</string>
+              <string>2.4.0</string>
               <key>CFBundleSignature</key>
               <string>????</string>
               <key>CFBundleVersion</key>
-              <string>2.3.0</string>
+              <string>2.4.0</string>
               <key>MinimumOSVersion</key>
               <string>12.0</string>
-              <key>NSHumanReadableCopyright</key>
-              <string>Copyright © 2024 Tencent. All rights reserved.</string>
           </dict>
           </plist>
           EOF
 
-      # 3. إعداد Theos
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
 
-      # 4. إعداد SDKs
       - name: Setup SDKs
         run: |
           rm -rf ~/theos/sdks
           git clone --depth 1 https://github.com/theos/sdks.git ~/theos/sdks
           rm -rf ~/theos/sdks/.git
 
-      # 5. تحميل fishhook
-      - name: Download Dependencies
+      - name: Download Fishhook
         run: |
           curl -o fishhook.c https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.c
           curl -o fishhook.h https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.h
 
-      # 6. بناء الفريم وورك
       - name: Build Framework
         run: |
           export CODE_SIGNING_REQUIRED=NO
           make FINALPACKAGE=1
 
-      # 7. تجهيز الملفات
       - name: Prepare Artifact
         run: |
           mkdir -p build_output
-          # نسخ الفريم وورك
           cp -r .theos/obj/GCloudCore.framework build_output/
-          # وضع Info.plist داخله
           cp Info.plist build_output/GCloudCore.framework/
 
-      # 8. رفع الناتج (تم التعديل هنا)
       - name: Upload Framework
         uses: actions/upload-artifact@v4
         with:
-          name: GCloudCore_Framework
-          # التعديل: نرفع المجلد الأب (build_output) ليتم الحفاظ على مجلد الفريم وورك بداخله
-          path: build_output/ 
+          name: GCloudCore_Diamond_Edition
+          path: build_output/
