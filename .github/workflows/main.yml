@@ -12,45 +12,46 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1. تثبيت الاعتمادات الضرورية (تمت إضافة ldid لحل مشكلتك)
+      # 1. تثبيت الاعتمادات (ldid ضروري للتوقيع الوهمي)
       - name: Install Dependencies
         run: |
           brew install ldid
           brew install make
 
-      # 2. تثبيت Theos
+      # 2. إعداد Theos
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
 
-      # 3. تثبيت SDKs (مع تنظيف المجلد القديم لتجنب الأخطاء)
+      # 3. إعداد SDKs
       - name: Setup SDKs
         run: |
           rm -rf ~/theos/sdks
           git clone --depth 1 https://github.com/theos/sdks.git ~/theos/sdks
           rm -rf ~/theos/sdks/.git
 
-      # 4. تحميل مكتبة fishhook
+      # 4. تحميل fishhook
       - name: Download Dependencies
         run: |
           curl -o fishhook.c https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.c
           curl -o fishhook.h https://raw.githubusercontent.com/facebook/fishhook/master/fishhook.h
 
-      # 5. بناء الفريم وورك (مع تجاهل التوقيع الإجباري)
+      # 5. بناء الفريم وورك
       - name: Build Framework
         run: |
+          # نتجاهل التوقيع الصارم لكن نسمح بالبناء النهائي
           export CODE_SIGNING_REQUIRED=NO
           make FINALPACKAGE=1
 
-      # 6. تجهيز الفريم وورك للرفع (خطوة معدلة لتناسب المجلدات)
+      # 6. تجهيز الملف (هنا كان الخطأ وتم تصحيحه)
       - name: Prepare Artifact
         run: |
           mkdir -p build_output
-          # نسخ مجلد الفريم وورك بالكامل بدلاً من البحث عن dylib فقط
-          cp -r .theos/obj/debug/GCloudCore.framework build_output/
+          # التصحيح: البحث في .theos/obj مباشرة وليس داخل debug
+          cp -r .theos/obj/GCloudCore.framework build_output/
 
-      # 7. رفع الملف الناتج
+      # 7. رفع الناتج
       - name: Upload Framework
         uses: actions/upload-artifact@v4
         with:
