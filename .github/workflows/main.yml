@@ -1,4 +1,4 @@
-name: Build Pro Max Shield
+name: Build GCloudShield VIP
 
 on:
   push:
@@ -10,8 +10,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Dependencies
-        run: brew install ldid xz
+      - run: brew install ldid xz
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
@@ -23,14 +22,14 @@ jobs:
         run: |
           export THEOS=~/theos
           make clean
-          make messages=yes
+          make
       - name: Prepare Artifact
         run: |
           mkdir -p build_output
-          # نظام بحث ذكي لحل مشكلة exit code 1 وتغير الأسماء
+          # البحث الديناميكي لمنع خطأ No such file
           find .theos/obj -name "*.dylib" -exec cp {} build_output/ \;
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: Pro-Max-Final-Dylib
+          name: GCloudShield-Premium
           path: build_output/
