@@ -7,22 +7,20 @@
 #import <objc/runtime.h>
 #import "fishhook.h"
 
-// 🎯 الأهداف المحمية (اسم ملف الهاك الخاص بك)
+// الهدف المحمي (ملف الهاك الخاص بك)
 #define TARGET_HACK "libwebp"
 
 // ============================================================================
-// 1. نظام تزوير الذاكرة (Memory Spoofing AI)
+// حماية البولت تراك (Bullet Track Shield)
 // ============================================================================
-// هذا الجزء يحمي "البولت تراك" من الفحص المباشر للذاكرة
 static int (*orig_dladdr)(const void *, Dl_info *);
 int hooked_dladdr(const void *addr, Dl_info *info) {
     int result = orig_dladdr(addr, info);
     if (result && info && info->dli_fname) {
-        // إذا كان الفحص يتجه لملف الهاك (الذي يحتوي على البولت تراك)
         if (strstr(info->dli_fname, TARGET_HACK)) {
-            // نوجه نظام الحماية لمكتبة الفيزياء الرسمية في اللعبة للتمويه
+            // تزوير الهوية لتظهر كمكتبة SceneKit الرسمية للفيزياء
             info->dli_fname = "/System/Library/Frameworks/SceneKit.framework/SceneKit";
-            info->dli_sname = "SCNPhysicsContact"; // دالة فيزيائية وهمية
+            info->dli_sname = "SCNPhysicsContact"; 
             return 1;
         }
     }
@@ -30,71 +28,43 @@ int hooked_dladdr(const void *addr, Dl_info *info) {
 }
 
 // ============================================================================
-// 2. حماية الـ Hooking (Anti-Hook Detection)
-// ============================================================================
-// يمنع اللعبة من اكتشاف أننا قمنا بتبديل وظائف الرصاص (Bullet Functions)
-static void* (*orig_dlsym)(void *handle, const char *symbol);
-void* hooked_dlsym(void *handle, const char *symbol) {
-    if (symbol) {
-        // إذا حاولت الحماية البحث عن أدوات الحقن أو وظائف البولت تراك المعدلة
-        if (strstr(symbol, "MSHook") || strstr(symbol, "Substrate") || strstr(symbol, "fishhook")) {
-            return NULL; // إخفاء الأداة تماماً
-        }
-    }
-    return orig_dlsym(handle, symbol);
-}
-
-// ============================================================================
-// 3. محلل الشبكة الذكي (AI Network Firewall)
+// حماية الشبكة (AI Network Guard)
 // ============================================================================
 static int (*orig_getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res);
 int hooked_getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) {
     if (node) {
-        // حظر سيرفرات كشف الغش (Anti-Cheat Servers)
-        const char *blacklist[] = {"ace", "shield", "monitor", "vmp", "tdid", "report", "log"};
-        for (int i = 0; i < 7; i++) {
-            if (strcasestr(node, blacklist[i])) return EAI_NONAME;
+        // حظر سيرفرات التبليغ ومنع إرسال سجلات البولت تراك
+        if (strstr(node, "report") || strstr(node, "ace") || strstr(node, "shield") || strstr(node, "log")) {
+            return EAI_NONAME;
         }
     }
     return orig_getaddrinfo(node, service, hints, res);
 }
 
 // ============================================================================
-// 4. إخفاء المسارات (Path Stealth)
+// إخفاء الملف عن رادار الحماية (Ghost Mode)
 // ============================================================================
 static const char* (*orig_dyld_get_image_name)(uint32_t image_index);
 const char* hooked_dyld_get_image_name(uint32_t image_index) {
     const char *name = orig_dyld_get_image_name(image_index);
     if (name && strstr(name, TARGET_HACK)) {
-        // إظهار الملف كأنه جزء من نظام أبل الأساسي
+        // التمويه كأهم مكتبة برمجية في النظام
         return "/usr/lib/libobjc.A.dylib";
     }
     return name;
 }
 
 // ============================================================================
-// تفعيل النظام (Activation)
+// واجهة الترحيب الاحترافية
 // ============================================================================
-static void ShowAIProMessage() {
+static void ShowWelcome() {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"💎 AI BULLET SHIELD PRO" 
-                                                                     message:@"Target: libwebp\nFeature: Bullet Track (SECURED)\nStatus: Ghost Mode Active" 
-                                                              preferredStyle:UIAlertControllerStyleAlert];
-        [alert addAction:[UIAlertAction actionWithTitle:@"LETS GO" style:UIAlertActionStyleDefault handler:nil]];
-        
         UIWindow *window = [[UIApplication sharedApplication] windows].firstObject;
-        [window.rootViewController presentViewController:alert animated:YES completion:nil];
-    });
-}
+        UIViewController *top = window.rootViewController;
+        while (top.presentedViewController) top = top.presentedViewController;
 
-__attribute__((constructor))
-static void Init() {
-    struct rebinding rebinds[] = {
-        {"dladdr", (void *)hooked_dladdr, (void **)&orig_dladdr},
-        {"dlsym", (void *)hooked_dlsym, (void **)&orig_dlsym},
-        {"getaddrinfo", (void *)hooked_getaddrinfo, (void **)&orig_getaddrinfo},
-        {"_dyld_get_image_name", (void *)hooked_dyld_get_image_name, (void **)&orig_dyld_get_image_name}
-    };
-    rebind_symbols(rebinds, 4);
-    ShowAIProMessage();
-}
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"💎 BLACK AND AMAR PRO" 
+                                                                     message:@"AI Bullet Shield: ACTIVE\nStatus: UNDETECTED\nMode: GHOST" 
+                                                              preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"START" style:UIAlertActionStyleDefault handler:nil]];
+        [top present
