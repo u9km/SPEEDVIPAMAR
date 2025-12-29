@@ -8,27 +8,27 @@
 #import <netdb.h>
 #import "fishhook.h"
 
-// 🔒 إعدادات التخفي (ما زلنا نحتفظ بالاسم هنا فقط لغرض "الإخفاء" إذا قمت بحقنه يدوياً)
-#define HIDDEN_DYLIB "CoreData.dylib"
-#define FAKE_SYSTEM_PATH "/System/Library/Frameworks/Security.framework/Security"
-#define FAKE_SYSTEM_NAME "Security"
+// 🎯 الأسماء التي نريد حمايتها (بناءً على خطتك)
+// سيقوم الكود بإخفاء أي مسار يحتوي على هذه الكلمات
+#define PROTECT_TARGET_1 "App.framework"  // مكان الحماية
+#define PROTECT_TARGET_2 "libwebp"        // مكان التفعيلات
+
+// التمويه: سنظهر للنظام أن هذه الملفات هي مكتبات صور تابعة للنظام
+#define FAKE_PATH "/System/Library/Frameworks/ImageIO.framework/ImageIO"
 
 // ============================================================================
-// 1. العقل المدبر (Quantum Analysis Engine)
+// 1. المحرك الذكي (Smart Scan)
 // ============================================================================
-static BOOL QuantumScan(const char *input, const char *target) {
-    if (!input || !target) return NO;
-    size_t lenInput = strlen(input);
-    size_t lenTarget = strlen(target);
-    if (lenTarget > lenInput) return NO;
-    return strcasestr(input, target) != NULL;
+static BOOL SmartScan(const char *input, const char *pattern) {
+    if (!input || !pattern) return NO;
+    return strcasestr(input, pattern) != NULL;
 }
 
 // ============================================================================
-// 2. نظام الترحيب (Safe UI)
+// 2. واجهة الترحيب (Welcome Message)
 // ============================================================================
-static void ShowQuantumWelcome() {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(10.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+static void ShowSplitModeMessage() {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(8.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         
         UIWindow *window = nil;
         if (@available(iOS 13.0, *)) {
@@ -46,71 +46,98 @@ static void ShowQuantumWelcome() {
 
         if (!topController) return;
 
-        // رسالة مختلفة لتوضيح أن الوضع "حماية فقط"
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"🛡️ PURE SHIELD ACTIVE 🛡️" 
-                                                                     message:@"System: SECURED\nAuto-Load: OFF\nStatus: WAITING FOR INJECTION..." 
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"🛡️ GHOST MODE 🛡️" 
+                                                                     message:@"📦 Injection: SPLIT\n📂 App.framework: SECURE\n📂 libwebp: HIDDEN\n⛔ Anti-Ban: ACTIVE" 
                                                               preferredStyle:UIAlertControllerStyleAlert];
 
-        [alert addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+        [alert addAction:[UIAlertAction actionWithTitle:@"GO" style:UIAlertActionStyleDefault handler:nil]];
         
         @try { [topController presentViewController:alert animated:YES completion:nil]; } @catch (NSException *e) {}
     });
 }
 
 // ============================================================================
-// 3. شبح الشبكة (NetGhost)
+// 3. نظام التخفي المزدوج (Double Stealth)
+// ============================================================================
+// هذه الدالة هي الأهم: تخفي الحماية وتخفي الهاك الموجود في libwebp
+static const char* (*orig_dyld_get_image_name)(uint32_t image_index);
+const char* hooked_dyld_get_image_name(uint32_t image_index) {
+    const char *name = orig_dyld_get_image_name(image_index);
+    if (name) {
+        // إذا كان الملف هو الحماية أو الهاك
+        if (strstr(name, PROTECT_TARGET_1) || strstr(name, PROTECT_TARGET_2)) {
+            return "/usr/lib/libSystem.B.dylib"; // اجعله يبدو كملف نظام
+        }
+    }
+    return name;
+}
+
+static int (*orig_dladdr)(const void *, Dl_info *);
+int hooked_dladdr(const void *addr, Dl_info *info) {
+    int result = orig_dladdr(addr, info);
+    if (result && info && info->dli_fname) {
+        // تزوير المعلومات عند الفحص
+        if (strstr(info->dli_fname, PROTECT_TARGET_1) || strstr(info->dli_fname, PROTECT_TARGET_2)) {
+            info->dli_fname = FAKE_PATH;
+            info->dli_sname = "CGImageSourceCreate"; // دالة وهمية للصور
+        }
+    }
+    return result;
+}
+
+// ============================================================================
+// 4. حماية الذاكرة (Memory Guard)
+// ============================================================================
+static void* (*orig_dlsym)(void *, const char *);
+void* hooked_dlsym(void *handle, const char *symbol) {
+    if (symbol) {
+        // حماية كشف الذاكرة المعتادة
+        if (SmartScan(symbol, "MSHook") || SmartScan(symbol, "Substrate") || 
+            SmartScan(symbol, "Cydia") || SmartScan(symbol, "Esp")) {
+            return NULL; 
+        }
+    }
+    return orig_dlsym(handle, symbol);
+}
+
+// ============================================================================
+// 5. جدار الحماية (Firewall)
 // ============================================================================
 static int (*orig_getaddrinfo)(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res);
-
 int hooked_getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res) {
     if (node) {
         const char *blacklist[] = {
             "log", "report", "crash", "analytics", "data", "trace", "bugly", 
             "beacon", "tpns", "gcloud", "tdid", "monitor", "shield", "ace"
         };
-        
         for (int i = 0; i < 14; i++) {
-            if (QuantumScan(node, blacklist[i])) return EAI_NONAME;
+            if (SmartScan(node, blacklist[i])) return EAI_NONAME;
         }
     }
     return orig_getaddrinfo(node, service, hints, res);
 }
 
 // ============================================================================
-// 4. نظام الإخفاء (Stealth) - يحميك حتى لو حقنت الهاك يدوياً
+// 6. إخفاء الملفات (File Stealth)
 // ============================================================================
-static int (*orig_dladdr)(const void *, Dl_info *);
-int hooked_dladdr(const void *addr, Dl_info *info) {
-    int result = orig_dladdr(addr, info);
-    if (result && info && info->dli_fname) {
-        // إذا اكتشفنا ملف الهاك أو ملف الحماية، نقوم بتزوير بياناته
-        if (strstr(info->dli_fname, "GCloudCore") || strstr(info->dli_fname, HIDDEN_DYLIB)) {
-            info->dli_fname = FAKE_SYSTEM_PATH;
-            info->dli_sname = "SecTrustEvaluate"; 
+static int (*orig_stat)(const char *, struct stat *);
+int hooked_stat(const char *path, struct stat *buf) {
+    if (path) {
+        if (SmartScan(path, "Cydia") || SmartScan(path, "Substrate") || 
+            SmartScan(path, "Tweak") || strstr(path, "apt/") || 
+            SmartScan(path, "Filza")) {
+            errno = ENOENT;
+            return -1;
         }
     }
-    return result;
+    return orig_stat(path, buf);
 }
 
-static const char* (*orig_dyld_get_image_name)(uint32_t image_index);
-const char* hooked_dyld_get_image_name(uint32_t image_index) {
-    const char *name = orig_dyld_get_image_name(image_index);
-    // إخفاء الاسم الحقيقي عن اللعبة
-    if (name && (strstr(name, "GCloudCore") || strstr(name, HIDDEN_DYLIB))) {
-        return "/usr/lib/libSystem.B.dylib";
-    }
-    return name;
-}
-
-// ============================================================================
-// 5. حماية الملفات (File Integrity)
-// ============================================================================
 static FILE *(*orig_fopen)(const char *, const char *);
 FILE *hooked_fopen(const char *path, const char *mode) {
     if (path) {
-        if (QuantumScan(path, "tss") || QuantumScan(path, "table") || 
-            QuantumScan(path, "save") || QuantumScan(path, "pic") || 
-            QuantumScan(path, "light") || QuantumScan(path, "shadow")) {
+        if (SmartScan(path, "tss") || SmartScan(path, "save") || 
+            SmartScan(path, "pic") || SmartScan(path, "trace")) {
             return orig_fopen("/dev/null", mode);
         }
     }
@@ -118,21 +145,19 @@ FILE *hooked_fopen(const char *path, const char *mode) {
 }
 
 // ============================================================================
-// التشغيل الرئيسي (Main Entry)
+// التشغيل (Init)
 // ============================================================================
 __attribute__((constructor))
-static void InitQuantumShield() {
-    // تفعيل الهوكات (حماية + إخفاء + منع اتصالات)
+static void InitSplitShield() {
     struct rebinding rebinds[] = {
         {"getaddrinfo", (void *)hooked_getaddrinfo, (void **)&orig_getaddrinfo},
+        {"dlsym", (void *)hooked_dlsym, (void **)&orig_dlsym},
         {"dladdr", (void *)hooked_dladdr, (void **)&orig_dladdr},
+        {"stat", (void *)hooked_stat, (void **)&orig_stat},
         {"fopen", (void *)hooked_fopen, (void **)&orig_fopen},
         {"_dyld_get_image_name", (void *)hooked_dyld_get_image_name, (void **)&orig_dyld_get_image_name}
     };
     
-    rebind_symbols(rebinds, 4);
-    
-    // ⚠️ تم حذف دالة InjectCoreData نهائياً
-
-    ShowQuantumWelcome();
+    rebind_symbols(rebinds, 6);
+    ShowSplitModeMessage();
 }
