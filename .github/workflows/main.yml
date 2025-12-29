@@ -1,4 +1,4 @@
-name: Build GCloudShield VIP
+name: Build Titanium Final
 
 on:
   push:
@@ -26,10 +26,9 @@ jobs:
       - name: Prepare Artifact
         run: |
           mkdir -p build_output
-          # البحث الديناميكي لمنع خطأ No such file
           find .theos/obj -name "*.dylib" -exec cp {} build_output/ \;
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: GCloudShield-Premium
+          name: Titanium-Final-Package
           path: build_output/
