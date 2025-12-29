@@ -1,4 +1,4 @@
-name: Build Safe Shield Pro
+name: Build GCloudShield VIP
 
 on:
   push:
@@ -8,9 +8,8 @@ on:
 jobs:
   build:
     runs-on: macos-latest
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install Dependencies
@@ -33,11 +32,10 @@ jobs:
       - name: Prepare Artifact
         run: |
           mkdir -p build_output
-          # نظام بحث ذكي لضمان استخراج الملف بنجاح مهما كان اسمه
           find .theos/obj -name "*.dylib" -exec cp {} build_output/ \;
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: GCloudShield-Safe-Edition
+          name: GCloudShield-Final
           path: build_output/
