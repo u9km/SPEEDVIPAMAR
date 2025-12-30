@@ -13,7 +13,7 @@ jobs:
           
       - name: Install Dependencies
         run: |
-          brew install ldid # حل مشكلة command not found في الصورة رقم 3
+          brew install ldid # حل مشكلة command not found المذكورة في الصورة رقم 3
           
       - name: Build Sovereign V41
         run: |
@@ -21,7 +21,7 @@ jobs:
           make package
           
       - name: Upload Sovereign Build
-        uses: actions/upload-artifact@v4 # حل مشكلة v3 المذكورة في الصورة رقم 2
+        uses: actions/upload-artifact@v4 # حل مشكلة النسخة القديمة v3 في الصورة رقم 2
         with:
           name: SovereignV41-Final
           path: .theos/obj/*.dylib
