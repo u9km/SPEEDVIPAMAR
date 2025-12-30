@@ -1,83 +1,113 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
-#include <stdio.h>
 
 // ================================================
-// 1. نظام كشف حالة المباراة (من ملف MUNU.m)
+// 1. واجهة القائمة والزر العائم (Menu UI Engine)
 // ================================================
-@interface MatchStateDetector : NSObject
-+ (void)startMonitoring;
+@interface SovereignMenu : NSObject
++ (void)setupMenuSystem;
 @end
 
-@implementation MatchStateDetector
-+ (void)startMonitoring {
-    NSLog(@"[SMART GUARD] 👁️ بدء مراقبة حالة المباراة...");
-    [NSTimer scheduledTimerWithTimeInterval:1.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
-        // منطق فحص حالة اللعبة لضمان تفعيل الكشف في الوقت المناسب
-    }];
-}
-@end
+@implementation SovereignMenu
 
-// ================================================
-// 2. نظام فك الحماية (من ملف SHADOWBREAKERv10.m)
-// ================================================
-@interface ProtectionBreaker : NSObject
-+ (void)disableAllProtections;
-@end
+static UIButton *floatingButton;
+static UIView *mainMenuView;
+static BOOL isMenuVisible = NO;
 
-@implementation ProtectionBreaker
-+ (void)disableAllProtections {
-    NSLog(@"[SHADOWBREAKER] 🔓 تعطيل أنظمة حماية اللعبة...");
-    // تعطيل كشف التصحيح والجيلبريك
-}
-@end
-
-// ================================================
-// 3. محرك الكشف الذكي (ESP Engine)
-// ================================================
-@interface SmartESPEngine : NSObject
-+ (void)initializeESP;
-@end
-
-@implementation SmartESPEngine
-+ (void)initializeESP {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
++ (void)setupMenuSystem {
+    dispatch_async(dispatch_get_main_queue(), ^{
         UIWindow *window = [[UIApplication sharedApplication] keyWindow];
         if (!window) return;
+
+        // --- إنشاء الزر العائم (Floating Button) ---
+        floatingButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        floatingButton.frame = CGRectMake(10, 150, 60, 60);
+        floatingButton.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.7];
+        floatingButton.layer.cornerRadius = 30;
+        floatingButton.layer.borderWidth = 2;
+        floatingButton.layer.borderColor = [UIColor cyanColor].CGColor;
+        [floatingButton setTitle:@"👁️" forState:UIControlStateNormal];
+        floatingButton.titleLabel.font = [UIFont systemFontOfSize:30];
         
-        UILabel *notify = [[UILabel alloc] initWithFrame:CGRectMake(20, 100, 200, 30)];
-        notify.text = @"👁️ SYSTEM LOADED: V400";
-        notify.textColor = [UIColor orangeColor];
-        notify.font = [UIFont boldSystemFontOfSize:12];
-        [window addSubview:notify];
-        NSLog(@"[ESP] ✅ نظام الكشف جاهز.");
+        // إضافة إيماءة التحريك للزر
+        UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePan:)];
+        [floatingButton addGestureRecognizer:pan];
+        [floatingButton addTarget:self action:@selector(toggleMenu) forControlEvents:UIControlEventTouchUpInside];
+        
+        [window addSubview:floatingButton];
+
+        // --- إنشاء نافذة المنيو (Main Menu) ---
+        mainMenuView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 280, 350)];
+        mainMenuView.center = window.center;
+        mainMenuView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.9];
+        mainMenuView.layer.cornerRadius = 15;
+        mainMenuView.layer.borderWidth = 1;
+        mainMenuView.layer.borderColor = [UIColor cyanColor].CGColor;
+        mainMenuView.hidden = YES; // مخفي في البداية
+
+        // عنوان المنيو
+        UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(0, 10, 280, 30)];
+        title.text = @"SHADOWBREAKER V1.0";
+        title.textColor = [UIColor cyanColor];
+        title.textAlignment = NSTextAlignmentCenter;
+        title.font = [UIFont boldSystemFontOfSize:18];
+        [mainMenuView addSubview:title];
+
+        // زر تفعيل ESP
+        UIButton *espBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+        espBtn.frame = CGRectMake(20, 60, 240, 45);
+        espBtn.backgroundColor = [UIColor darkGrayColor];
+        [espBtn setTitle:@"Enable Smart ESP" forState:UIControlStateNormal];
+        [espBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        espBtn.layer.cornerRadius = 10;
+        [espBtn addTarget:self action:@selector(actionESP) forControlEvents:UIControlEventTouchUpInside];
+        [mainMenuView addSubview:espBtn];
+
+        [window addSubview:mainMenuView];
     });
+}
+
++ (void)handlePan:(UIPanGestureRecognizer *)p {
+    UIView *btn = p.view;
+    CGPoint trans = [p translationInView:btn.superview];
+    btn.center = CGPointMake(btn.center.x + trans.x, btn.center.y + trans.y);
+    [p setTranslation:CGPointZero inView:btn.superview];
+}
+
++ (void)toggleMenu {
+    isMenuVisible = !isMenuVisible;
+    mainMenuView.hidden = !isMenuVisible;
+    // اهتزاز بسيط عند الضغط
+    UIImpactFeedbackGenerator *gen = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleMedium];
+    [gen impactOccurred];
+}
+
++ (void)actionESP {
+    NSLog(@"[ESP] 👁️ تم تفعيل الكشف الذكي من القائمة.");
+    // هنا يتم استدعاء كود الرسم
 }
 @end
 
 // ================================================
-// 🚀 المدخل الرئيسي الجامع (The Ultimate Entry)
+// 2. فك الحماية والمراقبة (Protection & Match)
 // ================================================
 __attribute__((constructor))
 static void SovereignSystemEntry() {
-    // 1. إسكات سجلات المحرك فوراً لمنع الباند
+    // إسكات السجلات لمنع الوشاية
     freopen("/dev/null", "w", stdout);
     freopen("/dev/null", "w", stderr);
-    
-    // 2. تفعيل نظام فك الحماية
-    [ProtectionBreaker disableAllProtections];
 
-    // 3. تشغيل مراقبة حالة اللعبة والكشف عند تفعيل التطبيق
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification 
                                                       object:nil 
                                                        queue:[NSOperationQueue mainQueue] 
                                                   usingBlock:^(NSNotification *note) {
         static dispatch_once_t once;
         dispatch_once(&once, ^{
-            [MatchStateDetector startMonitoring];
-            [SmartESPEngine initializeESP];
-            NSLog(@"[SOVEREIGN] 🎯 تم تفعيل كافة الأنظمة المدمجة.");
+            // تشغيل نظام المنيو بعد 5 ثوانٍ من استقرار اللعبة
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [SovereignMenu setupMenuSystem];
+            });
         });
     }];
 }
