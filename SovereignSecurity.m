@@ -35,7 +35,7 @@ static NSString *Sovereign_V41_Decrypt(const char *cipher) {
             Sovereign_V41_Decrypt("\x31\x26\x33\x2C\x31\x37"), // report
             Sovereign_V41_Decrypt("\x30\x33\x26\x20\x37\x22\x37\x26"), // spectate
             Sovereign_V41_Decrypt("\x2F\x20\x24\x24\x2C\x20\x2F\x33\x30"), // lagcomp
-            Sovereign_V41_Decrypt("\x01\x26\x2A\x2D\x24\x11\x26\x21\x36\x24\x24\x26\x27") // BeingDebugged
+            Sovereign_V41_Decrypt("\x01\x26\x2A\x2D\x24\x11\x26\x21\x36\x24\x24\x26\x27"), // BeingDebugged
             Sovereign_V41_Decrypt("\x12\x1A\x18\x3A\x3F\x3F"), // AIKill
             Sovereign_V41_Decrypt("\x12\x1A\x18\x3A\x3F\x3F\x1C\x37\x3A\x3E\x26\x33\x1A\x37\x3F"), // AIKillPlayerInfo
             Sovereign_V41_Decrypt("\x12\x38\x3A\x3C\x3A\x1A"), // Akamai
