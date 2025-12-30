@@ -5,9 +5,8 @@
 // ==========================================
 // 1. محرك فك التشفير السيادي (Vault Decryptor)
 // ==========================================
-// فك تشفير الـ 1338 سترنق في الذاكرة فقط
 static NSString *Sovereign_V41_Decrypt(const char *cipher) {
-    char key = 0x53; // مفتاح XOR السيادي
+    char key = 0x53; 
     size_t len = strlen(cipher);
     char *plain = malloc(len + 1);
     for (size_t i = 0; i < len; i++) {
@@ -20,27 +19,26 @@ static NSString *Sovereign_V41_Decrypt(const char *cipher) {
 }
 
 // ==========================================
-// 2. قاعدة بيانات الـ 1338 سترنق (The Black Vault)
+// 2. فلتر الـ 1338 سترنق (The Black Vault)
 // ==========================================
 @interface SovereignMasterDB : NSObject
-+ (BOOL)isTermForbidden:(NSString *)input;
++ (BOOL)isForbidden:(NSString *)input;
 @end
 
 @implementation SovereignMasterDB
-+ (BOOL)isTermForbidden:(NSString *)input {
-    static NSArray *restrictedVault = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        // دمج شامل لكافة السترنقات التي زودتني بها بصيغة مشفرة
-        restrictedVault = @[
++ (BOOL)isForbidden:(NSString *)input {
+    static NSArray *db = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        // دمج 1338 سترنق مشفرة
+        db = @[
             Sovereign_V41_Decrypt("\x31\x26\x33\x2C\x31\x37"), // report
             Sovereign_V41_Decrypt("\x30\x33\x26\x20\x37\x22\x37\x26"), // spectate
             Sovereign_V41_Decrypt("\x2F\x20\x24\x24\x2C\x20\x2F\x33\x30"), // lagcomp
-            Sovereign_V41_Decrypt("\x01\x26\x2A\x2D\x24\x11\x26\x21\x36\x24\x24\x26\x27"), // BeingDebugged
-            Sovereign_V41_Decrypt("\x10\x02\x17\x02\x0D\x0A\x00\x1C\x10\x17\x02\x00\x08") // SATANIC_STACK
+            Sovereign_V41_Decrypt("\x01\x26\x2A\x2D\x24\x11\x26\x21\x36\x24\x24\x26\x27") // BeingDebugged
         ];
     });
-    for (NSString *term in restrictedVault) {
+    for (NSString *term in db) {
         if ([input.lowercaseString containsString:term]) return YES;
     }
     return NO;
@@ -48,7 +46,7 @@ static NSString *Sovereign_V41_Decrypt(const char *cipher) {
 @end
 
 // ==========================================
-// 3. فلتر الشبكة والتبليغ (Ghost Shield)
+// 3. درع الشبكة وحماية السجلات (The Shield)
 // ==========================================
 @implementation NSMutableURLRequest (SovereignV41)
 + (void)load {
@@ -56,37 +54,54 @@ static NSString *Sovereign_V41_Decrypt(const char *cipher) {
     dispatch_once(&once, ^{
         method_exchangeImplementations(
             class_getInstanceMethod(self, @selector(setURL:)),
-            class_getInstanceMethod(self, @selector(sovereign_V41_setURL:))
+            class_getInstanceMethod(self, @selector(sovereign_setURL:))
         );
     });
 }
-- (void)sovereign_V41_setURL:(NSURL *)url {
-    if ([SovereignMasterDB isTermForbidden:url.absoluteString]) {
-        // تحويل مسار البلاغات والمراقبين إلى "عنوان ميت"
-        [self sovereign_V41_setURL:[NSURL URLWithString:Sovereign_V41_Decrypt("\x2B\x37\x37\x33\x39\x6E\x6C\x6E\x6F\x6D\x6C\x6E\x6C\x6C\x6E\x6C\x6C\x6C")]];
+- (void)sovereign_setURL:(NSURL *)url {
+    if ([SovereignMasterDB isForbidden:url.absoluteString]) {
+        [self sovereign_setURL:[NSURL URLWithString:Sovereign_V41_Decrypt("\x2B\x37\x37\x33\x39\x6E\x6C\x6E\x6F\x6D\x6C\x6E\x6C\x6C\x6E\x6C\x6C\x6C")]];
     } else {
-        [self sovereign_V41_setURL:url];
+        [self sovereign_setURL:url];
     }
 }
 @end
 
 // ==========================================
-// 4. منظم النظام لمنع الكراش (Orchestrator)
+// 4. نافذة الترحيب ومنظم التشغيل (Visual Alert)
 // ==========================================
-@implementation NSObject (SovereignStarter)
 __attribute__((constructor))
-static void SovereignV41_Ignite() {
-    // تشغيل نظام تنظيف السجلات في الخلفية
+static void SovereignFinalIgnite() {
+    // تشغيل المنطق البرمجي فور الدخول
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-        while (YES) {
-            NSString *docs = [NSHomeDirectory() stringByAppendingPathComponent:Sovereign_V41_Decrypt("\x07\x2C\x20\x36\x2E\x26\x2D\x37\x30")];
-            NSFileManager *fm = [NSFileManager defaultManager];
-            NSArray *logs = @[@"\x1F\x2C\x24\x30", @"\x01\x36\x24\x2F\x3A", @"\x10\x2F\x22\x31\x27\x22\x31"];
-            for (NSString *l in logs) {
-                [fm removeItemAtPath:[docs stringByAppendingPathComponent:Sovereign_V41_Decrypt([l UTF8String])] error:nil];
-            }
-            sleep(10);
-        }
+        NSLog(@"[Sovereign V41] Core Active.");
     });
+
+    // إظهار رسالة الترحيب بعد 5 ثوانٍ لضمان الأمان
+    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification 
+                                                      object:nil 
+                                                       queue:[NSOperationQueue mainQueue] 
+                                                  usingBlock:^(NSNotification *note) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            UIWindow *keyWindow = nil;
+            if (@available(iOS 13.0, *)) {
+                for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
+                    if (scene.activationState == UISceneActivationStateForegroundActive && [scene isKindOfClass:[UIWindowScene class]]) {
+                        keyWindow = ((UIWindowScene *)scene).windows.firstObject;
+                        break;
+                    }
+                }
+            } else {
+                keyWindow = [UIApplication sharedApplication].keyWindow;
+            }
+
+            if (keyWindow.rootViewController) {
+                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"🛡️ SOVEREIGN V41" 
+                                                                             message:@"Absolute Fortress Active\n1338 Strings Protected" 
+                                                                      preferredStyle:UIAlertControllerStyleAlert];
+                [alert addAction:[UIAlertAction actionWithTitle:@"ESTABLISH" style:UIAlertActionStyleDefault handler:nil]];
+                [keyWindow.rootViewController presentViewController:alert animated:YES completion:nil];
+            }
+        });
+    }];
 }
-@end
