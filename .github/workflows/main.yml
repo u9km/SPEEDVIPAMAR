@@ -1,43 +1,19 @@
-name: Build Sovereign Security
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
+name: build_sovereign_v41
+on: [push]
 jobs:
   build:
     runs-on: macos-latest
-
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Install Dependencies
-      run: |
-        brew install ldid xz
-
-    - name: Setup Theos
-      run: |
-        git clone --recursive https://github.com/theos/theos.git $HOME/theos
-        curl -L https://github.com/theos/sdks/archive/master.zip -o sdks.zip
-        unzip sdks.zip
-        mv sdks-master $HOME/theos/sdks
-        rm sdks.zip
-
-    - name: Build
-      run: |
-        export THEOS=$HOME/theos
-        make clean
-        make
-
-    - name: Collect Artifacts
-      run: |
-        mkdir -p output
-        find .theos/obj -name "*.dylib" -exec cp {} output/ \;
-
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: SovereignSecurity-Build
-        path: output/
+      - uses: actions/checkout@v3
+      - name: Setup Theos
+        run: |
+          git clone --recursive https://github.com/theos/theos.git ~/theos
+      - name: Build Sovereign V41
+        run: |
+          export THEOS=~/theos
+          make package
+      - name: Upload Sovereign Build
+        uses: actions/upload-artifact@v3
+        with:
+          name: SovereignV41-Final
+          path: .theos/obj/*.dylib
