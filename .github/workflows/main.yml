@@ -1,33 +1,23 @@
 name: build_sovereign_v41_final
 on: [push]
-
 jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4 # تم التحديث للإصدار v4 لحل أخطاء التوافق
-
+      - uses: actions/checkout@v4
       - name: Setup Theos
-        run: |
-          git clone --recursive https://github.com/theos/theos.git ~/theos
-          
+        run: git clone --recursive https://github.com/theos/theos.git ~/theos
       - name: Install Dependencies
-        run: |
-          brew install ldid # حل مشكلة "bash: ldid: command not found"
-          
+        run: brew install ldid # حل مشكلة command not found
       - name: Build Sovereign V41
         run: |
           export THEOS=~/theos
-          make package # بناء الحزمة النهائية
-          
+          make package
       - name: Upload Sovereign Artifacts
-        uses: actions/upload-artifact@v4 # حل مشكلة الإصدار القديم v3
+        uses: actions/upload-artifact@v4 # حل مشكلة deprecated version
         with:
           name: SovereignV41-Full-Package
-          # تحديث المسارات لضمان العثور على ملف الـ dylib والـ deb بنجاح
           path: |
             packages/*.deb
             .theos/obj/debug/*.dylib
             .theos/obj/*.dylib
-          if-no-files-found: error
