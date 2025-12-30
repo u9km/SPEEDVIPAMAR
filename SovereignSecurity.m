@@ -6,60 +6,63 @@
 // 👁️ محرك الكشف الذكي (Smart ESP Engine)
 // ================================================
 @interface SmartESPEngine : NSObject
-+ (void)initializeESP;
++ (void)enableSmartESP:(BOOL)enable;
++ (void)setupDrawingOverlay;
 @end
 
 @implementation SmartESPEngine
 
 static BOOL _espEnabled = NO;
 
-+ (void)initializeESP {
-    if (_espEnabled) return;
-    _espEnabled = YES;
-
-    NSLog(@"[SMART ESP] 👁️ بدء تشغيل الكشف الذكي...");
-
-    // انتظر 5 ثوانٍ لضمان استقرار واجهة اللعبة قبل الرسم
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self setupOverlay];
-    });
++ (void)enableSmartESP:(BOOL)enable {
+    _espEnabled = enable;
+    if (enable) {
+        NSLog(@"[SMART ESP] 👁️ بدء تشغيل محرك الكشف الذكي...");
+        // تأخير التشغيل 5 ثوانٍ لضمان استقرار واجهة اللعبة
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self setupDrawingOverlay];
+        });
+    }
 }
 
-+ (void)setupOverlay {
++ (void)setupDrawingOverlay {
     dispatch_async(dispatch_get_main_queue(), ^{
-        UIWindow *mainWindow = [[UIApplication sharedApplication] keyWindow];
-        if (!mainWindow) return;
+        UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+        if (!window) return;
 
-        // إشعار بسيط للتأكد من عمل الكاشف داخل اللعبة
-        UIView *notifyView = [[UIView alloc] initWithFrame:CGRectMake(20, 60, 220, 40)];
-        notifyView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.7];
-        notifyView.layer.cornerRadius = 8;
+        // إنشاء لوحة إشعار النشاط (Active Notification)
+        UIView *overlayInfo = [[UIView alloc] initWithFrame:CGRectMake(30, 80, 200, 40)];
+        overlayInfo.backgroundColor = [UIColor colorWithWhite:0 alpha:0.6];
+        overlayInfo.layer.cornerRadius = 10;
+        overlayInfo.userInteractionEnabled = NO;
 
-        UILabel *label = [[UILabel alloc] initWithFrame:notifyView.bounds];
-        label.text = @"👁️ Sovereign ESP Active";
-        label.textColor = [UIColor greenColor];
-        label.textAlignment = NSTextAlignmentCenter;
-        label.font = [UIFont boldSystemFontOfSize:14];
+        UILabel *statusLabel = [[UILabel alloc] initWithFrame:overlayInfo.bounds];
+        statusLabel.text = @"👁️ ESP: ACTIVE";
+        statusLabel.textColor = [UIColor cyanColor];
+        statusLabel.textAlignment = NSTextAlignmentCenter;
+        statusLabel.font = [UIFont boldSystemFontOfSize:14];
 
-        [notifyView addSubview:label];
-        [mainWindow addSubview:notifyView];
+        [overlayInfo addSubview:statusLabel];
+        [window addSubview:overlayInfo];
 
-        // هنا يبدأ محرك الرسم الفعلي (CADisplayLink) الخاص بـ ESP.m
-        NSLog(@"[SMART ESP] ✅ طبقة الرسم جاهزة للعمل.");
+        NSLog(@"[SMART ESP] ✅ طبقة الرسم والاشعارات جاهزة.");
     });
 }
 @end
 
 // ================================================
-// 🚀 المدخل الرئيسي (Constructor)
+// 🚀 نقطة الانطلاق التلقائية (The Entry Point)
 // ================================================
 __attribute__((constructor))
-static void ESPMainEntry() {
-    // تشغيل الكود بمجرد أن تصبح اللعبة نشطة لمنع الخروج المفاجئ (Crash)
+static void ESP_Initializer() {
+    // مراقبة نشاط التطبيق لتفعيل الكشف بدون كراش
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification 
                                                       object:nil 
                                                        queue:[NSOperationQueue mainQueue] 
                                                   usingBlock:^(NSNotification *note) {
-        [SmartESPEngine initializeESP];
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            [SmartESPEngine enableSmartESP:YES];
+        });
     }];
 }
