@@ -1,19 +1,23 @@
-name: build_sovereign_v41
+name: build_sovereign_v41_final
 on: [push]
 jobs:
   build:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4 # تحديث للإصدار الرابع
+
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
+          
       - name: Build Sovereign V41
         run: |
           export THEOS=~/theos
           make package
+          
       - name: Upload Sovereign Build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4 # تم التحديث هنا لحل خطأ الصورة
         with:
-          name: SovereignV41-Final
+          name: SovereignV41-Final-Dylib
           path: .theos/obj/*.dylib
