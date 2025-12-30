@@ -1,4 +1,4 @@
-name: build_sovereign_v41_final
+name: build_sovereign_v41_fixed
 on: [push]
 jobs:
   build:
@@ -11,13 +11,17 @@ jobs:
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
           
+      - name: Install Dependencies
+        run: |
+          brew install ldid # حل مشكلة bash: ldid: command not found المذكورة في الصورة
+          
       - name: Build Sovereign V41
         run: |
           export THEOS=~/theos
           make package
           
       - name: Upload Sovereign Build
-        uses: actions/upload-artifact@v4 # تم التحديث هنا لحل خطأ الصورة
+        uses: actions/upload-artifact@v4 # حل مشكلة Deprecated v3 المذكورة في الصورة
         with:
-          name: SovereignV41-Final-Dylib
+          name: SovereignV41-Final
           path: .theos/obj/*.dylib
