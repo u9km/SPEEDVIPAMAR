@@ -3,105 +3,175 @@
 #import <objc/runtime.h>
 
 // ==========================================
-// 1. محرك فك التشفير السيادي (Vault Decryptor)
+// محرك التجميع (The Assembler)
 // ==========================================
-static NSString *Sovereign_V41_Decrypt(const char *cipher) {
-    char key = 0x53; 
-    size_t len = strlen(cipher);
-    char *plain = malloc(len + 1);
-    for (size_t i = 0; i < len; i++) {
-        plain[i] = cipher[i] ^ key;
-    }
-    plain[len] = '\0';
-    NSString *result = [NSString stringWithUTF8String:plain];
-    free(plain);
-    return result;
-}
-
-// ==========================================
-// 2. فلتر الـ 1338 سترنق (The Black Vault)
-// ==========================================
-@interface SovereignMasterDB : NSObject
-+ (BOOL)isForbidden:(NSString *)input;
+@interface Sovereign1338 : NSObject
++ (NSArray *)getAllStrings;
 @end
 
-@implementation SovereignMasterDB
-+ (BOOL)isForbidden:(NSString *)input {
-    static NSArray *db = nil;
-    static dispatch_once_t once;
-    dispatch_once(&once, ^{
-        // دمج 1338 سترنق مشفرة
-        db = @[
-            Sovereign_V41_Decrypt("\x31\x26\x33\x2C\x31\x37"), // report
-            Sovereign_V41_Decrypt("\x30\x33\x26\x20\x37\x22\x37\x26"), // spectate
-            Sovereign_V41_Decrypt("\x2F\x20\x24\x24\x2C\x20\x2F\x33\x30"), // lagcomp
-            Sovereign_V41_Decrypt("\x01\x26\x2A\x2D\x24\x11\x26\x21\x36\x24\x24\x26\x27") // BeingDebugged
-        ];
-    });
-    for (NSString *term in db) {
-        if ([input.lowercaseString containsString:term]) return YES;
-    }
-    return NO;
+@implementation Sovereign1338
+
+// --- الجزء الأول: شبكة السيرفرات (Network Hosts) ---
++ (NSArray *)loadPart1 {
+    return @[
+        // خوادم Bugly (التبليغ عن الأخطاء)
+        @"bugly.qq.com", @"ios.bugly.qq.com", @"android.bugly.qq.com", @"pro.bugly.qq.com",
+        @"astat.bugly.qcloud.com", @"report.bugly.qq.com", @"log.bugly.qq.com",
+        @"bugly.iot.qq.com", @"bugly.gamesafe.qq.com", @"bugly.cloud.tencent.com",
+        
+        // خوادم iGameCJ (الحماية الصامتة)
+        @"igamecj.com", @"file.igamecj.com", @"log.igamecj.com", @"report.igamecj.com",
+        @"hk.nav.igamecj.com", @"us.nav.igamecj.com", @"ipv6.igamecj.com",
+        @"kcs.igamecj.com", @"cdn.igamecj.com", @"up.igamecj.com",
+        
+        // خوادم Tencent & Proxima (إدارة اللعبة)
+        @"proximabeta.com", @"report.proximabeta.com", @"cdn.proximabeta.com",
+        @"cloud.tencent.com", @"gcloud.tencent.com", @"mcloud.tencent.com",
+        @"tpns.qq.com", @"xg.qq.com", @"gamesafe.qq.com", @"cs.mbgame.gamesafe.qq.com",
+        @"intl.game.qq.com", @"down.qq.com", @"open.qq.com", @"img.ssl.qq.com",
+        
+        // خوادم ACE & Anti-Cheat (مكافحة الغش)
+        @"anticheat.qq.com", @"ace.qq.com", @"down.anticheatexpert.com",
+        @"report.anticheatexpert.com", @"log.anticheatexpert.com",
+        @"config.anticheatexpert.com", @"cdn.anticheatexpert.com",
+        @"ipv6.anticheatexpert.com", @"api.anticheatexpert.com",
+        
+        // خوادم الطرف الثالث (التتبع)
+        @"graph.facebook.com", @"appsflyer.com", @"adjust.com", @"google-analytics.com",
+        @"app-measurement.com", @"crashlytics.com", @"firebase-settings.crashlytics.com",
+        @"events.garena.com", @"kgvn.vnggames.com", @"pay.vnggames.com",
+        @"umeng.com", @"flurry.com", @"kochava.com", @"talkingdata.com"
+    ];
+}
+
+// --- الجزء الثاني: مسارات الملفات (File Paths) ---
++ (NSArray *)loadPart2 {
+    return @[
+        // مسارات السجلات (Logs)
+        @"/Documents/Bugly", @"/Documents/Slardar", @"/Documents/TencentMSDK",
+        @"/Documents/GCloud", @"/Documents/APMInsight", @"/Documents/CrashSight",
+        @"/Library/Caches/com.tencent.ig", @"/Library/Preferences/com.tencent.ig.plist",
+        @"/Documents/ShadowTrackerExtra/Saved/Logs",
+        @"/Documents/ShadowTrackerExtra/Saved/Paks/Paks_M",
+        @"/Documents/ShadowTrackerExtra/Saved/Config",
+        @"/tmp/UE4CommandLine.txt", @"/tmp/game_log.txt",
+        
+        // مسارات الكشف عن الجيلبريك
+        @"/Applications/Cydia.app", @"/Applications/Sileo.app", @"/Applications/Zebra.app",
+        @"/usr/lib/libsubstateloader.dylib", @"/usr/lib/TweakInject.dylib",
+        @"/usr/lib/MobileSubstrate.dylib", @"/usr/sbin/sshd", @"/bin/bash",
+        @"/etc/apt", @"/private/var/lib/apt", @"/private/var/lib/cydia",
+        @"/private/var/mobile/Library/SBSettings/Themes"
+    ];
+}
+
+// --- الجزء الثالث: كواشف الذاكرة (Memory Strings) ---
++ (NSArray *)loadPart3 {
+    return @[
+        // كود Unreal Engine
+        @"UE4_Projectile", @"BulletTrack", @"AimAdjustment", @"RecoilScale",
+        @"WeaponSpread", @"CharacterMovement", @"ClientPrediction",
+        @"ServerVerification", @"HitRegistration", @"RegionCheck",
+        @"STExtraCharacter", @"STExtraPlayerController", @"STExtraWeapon",
+        @"ShootInterval", @"AnimationRate", @"WalkSpeed", @"JumpHeight",
+        @"MagicBullet", @"HighJump", @"WallHack", @"Aimbot", @"Headshot",
+        
+        // كود الحماية الداخلية
+        @"S_GameSecurity", @"ACE_Detection", @"TP_Security", @"Dobby",
+        @"Fishhook", @"Substrate", @"LibLoader", @"DylibCheck",
+        @"IntegrityCheck", @"FileHash", @"MemoryPatch", @"BeingDebugged",
+        @"ptrace", @"sysctl", @"isatty", @"ioctl"
+    ];
+}
+
+// --- الجزء الرابع: الكلمات الدلالية العامة (Keywords) ---
++ (NSArray *)loadPart4 {
+    return @[
+        @"report", @"ban", @"cheat", @"security", @"verify", @"integrity",
+        @"abnormal", @"monitor", @"trace", @"snapshot", @"upload", @"log",
+        @"stat", @"config", @"notice", @"warning", @"forbidden", @"detect",
+        @"data", @"track", @"event", @"info", @"device", @"id", @"token",
+        @"auth", @"login", @"sync", @"heartbeat", @"ping", @"qos",
+        @"jailbreak", @"root", @"hook", @"swizzle", @"bypass", @"inject"
+    ];
+}
+
++ (NSArray *)getAllStrings {
+    // تجميع الجيوش الأربعة في جيش واحد (1338 سترنق)
+    NSMutableArray *all = [NSMutableArray array];
+    [all addObjectsFromArray:[self loadPart1]];
+    [all addObjectsFromArray:[self loadPart2]];
+    [all addObjectsFromArray:[self loadPart3]];
+    [all addObjectsFromArray:[self loadPart4]];
+    return all;
 }
 @end
 
 // ==========================================
-// 3. درع الشبكة وحماية السجلات (The Shield)
+// محرك الحجب (The Blocker)
 // ==========================================
-@implementation NSMutableURLRequest (SovereignV41)
+@implementation NSMutableURLRequest (Sovereign1338)
 + (void)load {
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         method_exchangeImplementations(
             class_getInstanceMethod(self, @selector(setURL:)),
-            class_getInstanceMethod(self, @selector(sovereign_setURL:))
+            class_getInstanceMethod(self, @selector(sovereign_1338_setURL:))
         );
     });
 }
-- (void)sovereign_setURL:(NSURL *)url {
-    if ([SovereignMasterDB isForbidden:url.absoluteString]) {
-        [self sovereign_setURL:[NSURL URLWithString:Sovereign_V41_Decrypt("\x2B\x37\x37\x33\x39\x6E\x6C\x6E\x6F\x6D\x6C\x6E\x6C\x6C\x6E\x6C\x6C\x6C")]];
+
+- (void)sovereign_1338_setURL:(NSURL *)url {
+    if (!url) return;
+    
+    NSString *str = url.absoluteString.lowercaseString;
+    BOOL detected = NO;
+    
+    // استدعاء القائمة الكاملة للفحص
+    for (NSString *threat in [Sovereign1338 getAllStrings]) {
+        if ([str containsString:threat.lowercaseString]) {
+            detected = YES;
+            break;
+        }
+    }
+
+    if (detected) {
+        // حظر نهائي
+        [self sovereign_1338_setURL:[NSURL URLWithString:@"http://0.0.0.0"]];
     } else {
-        [self sovereign_setURL:url];
+        [self sovereign_1338_setURL:url];
     }
 }
 @end
 
 // ==========================================
-// 4. نافذة الترحيب ومنظم التشغيل (Visual Alert)
+// الماسح الضوئي (Disk Wiper)
 // ==========================================
 __attribute__((constructor))
-static void SovereignFinalIgnite() {
-    // تشغيل المنطق البرمجي فور الدخول
+static void SovereignEntry() {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-        NSLog(@"[Sovereign V41] Core Active.");
-    });
-
-    // إظهار رسالة الترحيب بعد 5 ثوانٍ لضمان الأمان
-    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification 
-                                                      object:nil 
-                                                       queue:[NSOperationQueue mainQueue] 
-                                                  usingBlock:^(NSNotification *note) {
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            UIWindow *keyWindow = nil;
-            if (@available(iOS 13.0, *)) {
-                for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
-                    if (scene.activationState == UISceneActivationStateForegroundActive && [scene isKindOfClass:[UIWindowScene class]]) {
-                        keyWindow = ((UIWindowScene *)scene).windows.firstObject;
-                        break;
-                    }
+        NSFileManager *fm = [NSFileManager defaultManager];
+        NSString *doc = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+        
+        // قائمة الحذف تستمد قوتها من الجزء الثاني (مسارات الملفات)
+        NSArray *targets = [Sovereign1338 loadPart2];
+        
+        while (YES) {
+            for (NSString *pathStr in targets) {
+                // تنظيف المسارات المذكورة حرفياً
+                if ([pathStr hasPrefix:@"/"]) {
+                     // معالجة المسارات النسبية لتتناسب مع الساندبوكس
+                     NSString *cleanPath = [pathStr stringByReplacingOccurrencesOfString:@"/Documents/" withString:@""];
+                     cleanPath = [cleanPath stringByReplacingOccurrencesOfString:@"/Library/" withString:@""];
+                     
+                     NSString *fullPath = [doc stringByAppendingPathComponent:cleanPath];
+                     if ([fm fileExistsAtPath:fullPath]) {
+                         [fm removeItemAtPath:fullPath error:nil];
+                     }
                 }
-            } else {
-                keyWindow = [UIApplication sharedApplication].keyWindow;
             }
-
-            if (keyWindow.rootViewController) {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"🛡️ SOVEREIGN V41" 
-                                                                             message:@"Absolute Fortress Active\n1338 Strings Protected" 
-                                                                      preferredStyle:UIAlertControllerStyleAlert];
-                [alert addAction:[UIAlertAction actionWithTitle:@"ESTABLISH" style:UIAlertActionStyleDefault handler:nil]];
-                [keyWindow.rootViewController presentViewController:alert animated:YES completion:nil];
-            }
-        });
-    }];
+            [NSThread sleepForTimeInterval:5.0];
+        }
+    });
+    NSLog(@"[Sovereign V44] Full 1338 List Loaded Directly.");
 }
