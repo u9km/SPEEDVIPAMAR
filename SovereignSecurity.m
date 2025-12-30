@@ -431,12 +431,15 @@ static NSString *Sovereign_V41_Decrypt(const char *cipher) {
 }
 @end
         ];
-    });
-    for (NSString *term in db) {
-        if ([input.lowercaseString containsString:term]) return YES;
-    }
+        }); 
+}
+
+for (NSString *term in db) {
     return NO;
 }
+
+}
+
 @end
 
 // ==========================================
