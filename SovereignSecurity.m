@@ -436,17 +436,6 @@ static NSString *Sovereign_V41_Decrypt(const char *cipher) {
     return NO;
 }
 @end
-        ];
-        }); 
-}
-
-for (NSString *term in db) {
-    return NO;
-}
-
-}
-
-@end
 
 // ==========================================
 // 3. درع الشبكة بدون كراش (Safe Swizzling)
