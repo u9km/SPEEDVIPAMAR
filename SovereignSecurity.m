@@ -1,7 +1,7 @@
 // =============== نظام السيد الظل - العكس الكامل لنظام مكافحة الغش ===============
 
-#import <Foundation/Foundation.h>
-#import <objc/runtime.h>
+#import "SovereignSecurity.h"
+#import "MemoryExploiter.h" // ضروري جداً لإصلاح الخطأ الذي ظهر لك
 #import <mach-o/dyld.h>
 #import <sys/mman.h>
 
