@@ -1,29 +1,22 @@
-# تحديد المعماريات (arm64 ضرورية للأجهزة الحديثة 64-بت)
-ARCHS = arm64
+# إعدادات المعمارية المستهدفة (iOS)
+TARGET := iphone:clang:latest:14.0
+ARCHS = arm64 arm64e
 
-# استهداف إصدار نظام مستقر لضمان عمل واجهة UIKit بدون كراش
-TARGET = iphone:clang:latest:12.0
-
-# نمط الروتلس (مطلوب للحقن اليدوي في ملفات IPA بدون جلبريك)
-THEOS_PACKAGE_SCHEME = rootless
-
-# تضمين ملفات تعريف Theos الأساسية
 include $(THEOS)/makefiles/common.mk
 
-# اسم التويك الناتج (سيتم إنتاج ملف SovereignSecurity.dylib)
+# اسم التويك (Tweak)
 TWEAK_NAME = SovereignSecurity
 
-# تحديد ملف الكود المدمج (تأكد من تسمية ملفك بهذا الاسم في GitHub)
+# ملفات السورس (أضف أي ملفات .m أخرى هنا)
 SovereignSecurity_FILES = SovereignSecurity.m
 
-# إعدادات المترجم (تفعيل ARC لإدارة الذاكرة تلقائياً ومنع اللاق)
-SovereignSecurity_CFLAGS = -fobjc-arc
+# الأطر العمل (Frameworks) المطلوبة
+SovereignSecurity_FRAMEWORKS = Foundation UIKit CoreGraphics CoreML
 
-# المكتبات الضرورية جداً لرسم الزر العائم والمنيو والاهتزاز
-SovereignSecurity_FRAMEWORKS = UIKit Foundation CoreGraphics QuartzCore AudioToolbox
+# إعدادات المترجم (تجاهل بعض التحذيرات إذا لزم الأمر)
+SovereignSecurity_CFLAGS = -fobjc-arc -Wno-deprecated-declarations
 
-# سطر منع الكراش عند بدء التشغيل وتعديل مواءمة القطاعات للحقن اليدوي
-SovereignSecurity_LDFLAGS += -Wl,-segalign,4000
-
-# إنهاء بناء التويك
 include $(THEOS_MAKE_PATH)/tweak.mk
+
+after-install::
+	install.exec "killall -9 SpringBoard"
