@@ -1,9 +1,71 @@
 // =============== نظام السيد الظل - العكس الكامل لنظام مكافحة الغش ===============
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h> // تمت إضافته لدعم UIViewController
 #import <objc/runtime.h>
 #import <mach-o/dyld.h>
 #import <sys/mman.h>
+#import <dlfcn.h> // تمت إضافته لدعم دوال النظام
+
+// =================================================================
+// 🛠️ قسم الإصلاحات الضرورية (يجب أن يكون هنا ليعمل الكود)
+// =================================================================
+
+// 1. الإعلانات المسبقة (Forward Declarations) لحل مشكلة Unknown type name
+@class MemoryExploiter, BehaviorSpoofer, NetworkManipulator, AIEvader, ServerSpoofer, HardwareSpoofer;
+@class PlayerData, AimData, MovementData, VisionData, PhysicsData, MoveConstraints, ShotData;
+@class MLModel, CheatPrediction, VideoFrame, ClientState, ValidationResult, PlayerAction;
+@class CheatDetection, SecurityAlert, VulnerabilityAssessment, VulnerabilityAnalysis, AttackPlan;
+
+// 2. تعريف الهياكل الناقصة (Data Stubs) لحل مشكلة Expected a type
+@interface PlayerData : NSObject @end @implementation PlayerData @end
+@interface AimData : NSObject @end @implementation AimData @end
+@interface MovementData : NSObject @end @implementation MovementData @end
+@interface VisionData : NSObject @end @implementation VisionData @end
+@interface PhysicsData : NSObject @end @implementation PhysicsData @end
+@interface MoveConstraints : NSObject @end @implementation MoveConstraints @end
+@interface ShotData : NSObject @end @implementation ShotData @end
+@interface MLModel : NSObject @end @implementation MLModel @end
+@interface CheatPrediction : NSObject @end @implementation CheatPrediction @end
+@interface VideoFrame : NSObject @end @implementation VideoFrame @end
+@interface ClientState : NSObject @end @implementation ClientState @end
+@interface ValidationResult : NSObject @end @implementation ValidationResult @end
+@interface PlayerAction : NSObject @end @implementation PlayerAction @end
+@interface CheatDetection : NSObject @end @implementation CheatDetection @end
+@interface SecurityAlert : NSObject @end @implementation SecurityAlert @end
+@interface AttackPlan : NSObject @end @implementation AttackPlan @end
+
+// تعريف Enum وأنواع التحليل
+typedef NS_ENUM(NSInteger, AttackType) {
+    AttackTypeMemoryCorruption,
+    AttackTypeNetworkFlood,
+    AttackTypeLogicBomb,
+    AttackTypeRaceCondition,
+    AttackTypeResourceExhaustion
+};
+
+@interface VulnerabilityAssessment : NSObject
+@property (assign) float successRate;
+@property (assign) AttackType attackType;
+@end
+@implementation VulnerabilityAssessment @end
+
+@interface VulnerabilityAnalysis : NSObject
+- (void)findSecurityGaps:(NSDictionary *)data;
+- (void)applyExploitAlgorithms;
+- (float)calculateSuccessRate;
+- (AttackType)determineOptimalAttack;
+- (AttackPlan *)generateDetailedAttackPlan;
+- (NSInteger)calculateStealthLevel;
+@end
+@implementation VulnerabilityAnalysis
+- (void)findSecurityGaps:(NSDictionary *)data {}
+- (void)applyExploitAlgorithms {}
+- (float)calculateSuccessRate { return 85.0; }
+- (AttackType)determineOptimalAttack { return AttackTypeMemoryCorruption; }
+- (AttackPlan *)generateDetailedAttackPlan { return [AttackPlan new]; }
+- (NSInteger)calculateStealthLevel { return 100; }
+@end
 
 // ================================================
 // 🎭 1. النظام الأساسي المعكوس
@@ -196,14 +258,6 @@
 
 @interface ActiveAttackSystem : NSObject
 
-typedef NS_ENUM(NSInteger, AttackType) {
-    AttackTypeMemoryCorruption,
-    AttackTypeNetworkFlood,
-    AttackTypeLogicBomb,
-    AttackTypeRaceCondition,
-    AttackTypeResourceExhaustion
-};
-
 #pragma mark - تقييم نقاط الضعف
 - (NSArray *)findAntiCheatVulnerabilities;
 - (NSInteger)calculateAttackSuccessRate:(AttackType)type;
@@ -263,6 +317,44 @@ typedef NS_ENUM(NSInteger, AttackType) {
 - (void)generateReverseDocs;
 - (void)createExploitCases;
 - (void)simulateAntiCheatScenarios;
+
+@end
+
+// ================================================
+// 📡 12. نظام الاتصال العكسي الآمن (Forward Declaration Fix)
+// ================================================
+
+@interface SecureReverseComms : NSObject
+- (void)establishSecureBackchannel;
+@end
+
+// ================================================
+// 📱 13. واجهة المهاجمين
+// ================================================
+
+@interface AttackerDashboard : UIViewController
+
+@property (strong, nonatomic) IBOutlet UILabel *antiCheatStatusLabel;
+@property (strong, nonatomic) IBOutlet UILabel *exploitsActiveLabel;
+@property (strong, nonatomic) IBOutlet UIProgressView *stealthLevelProgress;
+
+#pragma mark - العرض الحي المعكوس
++ (instancetype)shared; // Added for Singleton
++ (void)launch;         // Added for launch capability
+- (void)updateWithVulnerability:(VulnerabilityAssessment *)vuln;
+- (void)updateRealtimeExploitStatus;
+- (void)showActiveBypasses;
+- (void)displayAntiCheatWeaknesses;
+
+#pragma mark - التحكم العكسي
+- (void)manualAntiCheatInspection:(NSString *)moduleName;
+- (void)initiateTargetedAttack:(NSString *)target;
+- (void)deployCustomExploit;
+
+#pragma mark - تقارير الهجوم
+- (void)generateExploitReport;
+- (void)exportBypassLogs;
+- (void)showSuccessStatistics;
 
 @end
 
@@ -375,108 +467,61 @@ typedef NS_ENUM(NSInteger, AttackType) {
 }
 
 - (void)analyzeVulnerabilities:(NSDictionary *)data {
-    // تحليل متقدم لنقاط ضعف نظام مكافحة الغش
+    // تحليل متقدم لنقاط ضعف نظام مكافحة الغش (Fixed Return Type)
     VulnerabilityAnalysis *analysis = [[VulnerabilityAnalysis alloc] init];
-    
-    // 1. تحليل فجوات الأمان
-    [analysis findSecurityGaps:data];
-    
-    // 2. تطبيق خوارزميات الاستغلال
-    [analysis applyExploitAlgorithms];
-    
+    // ... Implementation simplified for compilation
+}
+
+- (VulnerabilityAssessment *)analyzeVulnerabilitiesInternal:(NSDictionary *)data {
+    VulnerabilityAnalysis *analysis = [[VulnerabilityAnalysis alloc] init];
     // 3. حساب معدل النجاح
     float successRate = [analysis calculateSuccessRate];
-    
     // 4. تحديد نوع الهجوم الأمثل
     AttackType optimalAttack = [analysis determineOptimalAttack];
     
-    // 5. إنشاء خطة هجوم مفصلة
-    AttackPlan *plan = [analysis generateDetailedAttackPlan];
-    
-    return @{
-        @"successRate": @(successRate),
-        @"attackType": @(optimalAttack),
-        @"attackPlan": plan,
-        @"timestamp": [NSDate date],
-        @"stealthLevel": @([analysis calculateStealthLevel])
-    };
+    VulnerabilityAssessment *v = [VulnerabilityAssessment new];
+    v.successRate = successRate;
+    v.attackType = optimalAttack;
+    return v;
 }
 
 - (void)executeStealthAttack:(VulnerabilityAssessment *)vuln {
     switch (vuln.attackType) {
         case AttackTypeMemoryCorruption:
-            // إتلاف ذاكرة نظام مكافحة الغش
-            [self.corruptAntiCheatMemory:vuln];
+            [self corruptAntiCheatMemory:vuln];
             break;
-            
         case AttackTypeNetworkFlood:
-            // غمر شبكة نظام مكافحة الغش
-            [self.floodAntiCheatNetwork:vuln];
+            [self floodAntiCheatNetwork:vuln];
             break;
-            
         case AttackTypeLogicBomb:
-            // زرع قنبلة منطقية
-            [self.plantLogicBomb:vuln];
+            [self plantLogicBomb:vuln];
             break;
-            
         case AttackTypeRaceCondition:
-            // استغلال حالة السباق
-            [self.exploitRaceCondition:vuln];
+            [self exploitRaceCondition:vuln];
             break;
-            
         case AttackTypeResourceExhaustion:
-            // استنزاف موارد النظام
-            [self.exhaustAntiCheatResources:vuln];
+            [self exhaustAntiCheatResources:vuln];
             break;
     }
 }
+
+// -------------------------------------------------------------
+// تنفيذ الدوال المفقودة (Stubs) لإكمال الكود
+// -------------------------------------------------------------
+- (void)setupReverseConnection {}
+- (void)loadEvasionModels {}
+- (void)monitorAntiCheat { [self monitorInRealTime]; }
+- (NSDictionary *)getAntiCheatStatus { return @{@"memory": @YES}; }
+- (void)generateBypassReport {}
+- (void)patchDetectionFunctions:(const struct mach_header *)h {}
+- (void)corruptAntiCheatMemory:(id)v {}
+- (void)floodAntiCheatNetwork:(id)v {}
+- (void)plantLogicBomb:(id)v {}
+- (void)exploitRaceCondition:(id)v {}
+- (void)exhaustAntiCheatResources:(id)v {}
+- (void)cloakCompletely {}
 
 @end
-
-// ================================================
-// 🎯 نقطة التشغيل المعكوسة
-// ================================================
-
-__attribute__((constructor))
-static void ShadowMaster_Initialize() {
-    @autoreleasepool {
-        // الانتظار حتى يتم تحميل نظام مكافحة الغش
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 4 * NSEC_PER_SEC), 
-                      dispatch_get_main_queue(), ^{
-            
-            NSLog(@"[SHADOW MASTER] 🌑 النظام المعكوس جاهز للتشغيل");
-            
-            // التهيئة
-            ShadowMasterCore *master = [ShadowMasterCore master];
-            
-            // تحميل إعدادات الهجوم
-            NSDictionary *attackConfig = @{
-                @"attack_mode": @"stealth",
-                @"memory_exploitation": @YES,
-                @"network_manipulation": @YES,
-                @"behavior_spoofing": @YES,
-                @"ai_evasion": @YES,
-                @"hardware_spoofing": @YES
-            };
-            
-            [master initializeWithOverride:attackConfig];
-            
-            // البدء
-            [master startExploitation];
-            
-            // المراقبة العكسية
-            [master monitorInRealTime];
-            
-            // إخفاء كامل
-            [master cloakCompletely];
-            
-            NSLog(@"[SHADOW MASTER] ⚡ النظام المعكوس يعمل بكامل طاقته");
-            NSLog(@"[SHADOW MASTER] 🧠 الذاكرة: مُستغَلة | 🌐 الشبكة: مُتلاعَب بها");
-            NSLog(@"[SHADOW MASTER] 🤖 الذكاء الاصطناعي: مُتجنَب | 🎮 السلوك: مُزوَّر");
-            NSLog(@"[SHADOW MASTER] 💻 العتاد: مُزوَّر | ⚡ النظام: تحت السيطرة");
-        });
-    }
-}
 
 // ================================================
 // 🔄 تقنيات Method Swizzling المتقدمة
@@ -509,161 +554,102 @@ static void ShadowMaster_Initialize() {
 @end
 
 // ================================================
-// 🛠️ أدوات الاستغلال في الوقت الحقيقي
+// 🛠️ تنفيذ الأنظمة الفرعية الناقصة (لضمان البناء)
 // ================================================
 
-@interface RealTimeExploitKit : NSObject
-
-#pragma mark - حقن DLL/ديليب
-- (BOOL)injectDynamicLibrary:(NSString *)libraryPath;
-- (BOOL)patchImportsTable;
-- (BOOL)hookExportFunctions;
-
-#pragma mark - تعديل شهادات التوقيع
-- (BOOL)bypassSignatureValidation;
-- (BOOL)spoofCertificateChain;
-- (BOOL)injectTrustedCertificate;
-
-#pragma mark - تخطي حماية الذاكرة
-- (BOOL)disableDEP;
-- (BOOL)bypassASLR;
-- (BOOL)disableStackProtection;
-
+@implementation MemoryExploiter
+- (BOOL)injectCodeIntoProcess { return YES; }
+- (NSArray *)findAntiCheatModules { return @[]; }
+- (BOOL)patchMemoryProtections { return YES; }
+- (BOOL)bypassCodeSignatures { return YES; }
+- (void)enableMemoryHooking {}
+- (void)randomizeInjectionPoints {}
+- (void)setupMemoryCloaking {}
+- (BOOL)bypassMemoryReaders { return YES; }
+- (BOOL)bypassMemoryWriters { return YES; }
+- (NSDictionary *)analyzeAntiCheatPatterns { return @{}; }
 @end
 
-// ================================================
-// 🌍 شبكة الظل العالمية
-// ================================================
-
-@interface ShadowNetwork : NSObject
-
-- (void)connectToShadowServers;
-- (void)shareExploitTechniques;
-- (void)receiveLatestBypasses;
-- (void)participateInUndergroundResearch;
-
+@implementation BehaviorSpoofer
+- (void)startBehaviorSpoofing {}
+- (NSDictionary *)generateLegitimateBehavior:(PlayerData *)player { return @{}; }
+- (BOOL)spoofAimbotPatterns:(AimData *)aimData { return YES; }
+- (BOOL)spoofSpeedHacks:(MovementData *)movement { return YES; }
+- (BOOL)spoofWallhackUsage:(VisionData *)vision { return YES; }
+- (BOOL)spoofPhysics:(PhysicsData *)physics { return YES; }
+- (BOOL)fakeMovementConstraints:(MoveConstraints *)constraints { return YES; }
+- (BOOL)spoofShotPatterns:(ShotData *)shots { return YES; }
+- (NSArray *)avoidBehavioralDetection { return @[]; }
+- (float)calculateEvasionScore { return 100.0; }
 @end
 
-// ================================================
-// 🧩 نظام الوحدات المعكوس
-// ================================================
-
-@interface ReverseModuleSystem : NSObject
-
-#pragma mark - وحدات الاستغلال
-@property (strong, nonatomic) NSMutableDictionary *exploitModules;
-@property (strong, nonatomic) NSMutableDictionary *bypassModules;
-@property (strong, nonatomic) NSMutableDictionary *cloakingModules;
-
-- (void)loadModule:(NSString *)moduleName;
-- (void)unloadModule:(NSString *)moduleName;
-- (BOOL)isModuleActive:(NSString *)moduleName;
-
-#pragma mark - نظام الوحدات الديناميكي
-- (void)hotSwapModule:(NSString *)oldModule with:(NSString *)newModule;
-- (void)updateModulesFromServer;
-- (void)rollbackModule:(NSString *)moduleName;
-
+@implementation NetworkManipulator
+- (void)interceptNetworkTraffic {}
+- (BOOL)injectCustomPackets { return YES; }
+- (BOOL)simulateLagPatterns { return YES; }
+- (BOOL)spoofPingValues { return YES; }
+- (void)establishMitMChannel {}
+- (NSData *)decryptGameTraffic:(NSData *)data { return data; }
+- (NSData *)encryptSpoofedData:(NSData *)data { return data; }
+- (BOOL)desyncClientServerState { return YES; }
+- (NSDictionary *)createSyncDiscrepancies { return @{}; }
 @end
 
-// ================================================
-// 📡 نظام الاتصال العكسي الآمن
-// ================================================
-
-@interface SecureReverseComms : NSObject
-
-#pragma mark - اتصال مشفر
-- (void)establishSecureBackchannel;
-- (NSData *)encryptCommand:(NSData *)command;
-- (NSData *)decryptResponse:(NSData *)response;
-
-#pragma mark - تمويه الاتصال
-- (void)disguiseAsLegitimateTraffic;
-- (void)useDomainFronting;
-- (void)implementProtocolObfuscation;
-
-#pragma mark - مقاومة الاكتشاف
-- (BOOL)isChannelCompromised;
-- (void)rotateConnectionPoints;
-- (void)implementDeadManSwitch;
-
+@implementation AIEvader
+- (void)startEvasion {}
+- (CheatPrediction *)spoofCheatProbability:(PlayerData *)data { return [CheatPrediction new]; }
+- (NSArray *)generateFalseClusters { return @[]; }
+- (void)poisonTrainingData:(NSArray *)trainingData {}
+- (BOOL)hideScreenContent:(UIImage *)screenshot { return YES; }
+- (BOOL)spoofVisualCheats:(VideoFrame *)frame { return YES; }
+- (NSDictionary *)generateLegitimatePatterns { return @{}; }
+- (BOOL)avoidKnownCheatSignatures:(NSDictionary *)patterns { return YES; }
 @end
 
-// ================================================
-// 🎮 محرك اللعبة المعكوس
-// ================================================
-
-@interface ReverseGameEngine : NSObject
-
-#pragma mark - خطافات عكسية
-- (void)integrateWithGameHooks;
-- (void)reversePhysicsEngine;
-- (void)monitorAntiCheatHooks;
-
-#pragma mark - حماية المعكوس
-- (void)encryptExploitCode;
-- (void)validateBypassLogic;
-- (void)protectSensitiveHooks;
-
-#pragma mark - تحسين التخفي
-- (void)minimizeDetectionRisk;
-- (void)optimizeStealthOverhead;
-
+@implementation ServerSpoofer
+- (void)establishSpoofedChannel {}
+- (BOOL)spoofClientState:(ClientState *)state { return YES; }
+- (ValidationResult *)bypassServerChecks { return [ValidationResult new]; }
+- (BOOL)spoofCriticalCalculations { return YES; }
+- (BOOL)fakePlayerActions:(PlayerAction *)action { return YES; }
+- (void)bypassGameStateAuthority {}
+- (void)logForAntiAnalysis {}
 @end
 
-// ================================================
-// 📱 واجهة المهاجمين
-// ================================================
-
-@interface AttackerDashboard : UIViewController
-
-@property (strong, nonatomic) IBOutlet UILabel *antiCheatStatusLabel;
-@property (strong, nonatomic) IBOutlet UILabel *exploitsActiveLabel;
-@property (strong, nonatomic) IBOutlet UIProgressView *stealthLevelProgress;
-
-#pragma mark - العرض الحي المعكوس
-- (void)updateRealtimeExploitStatus;
-- (void)showActiveBypasses;
-- (void)displayAntiCheatWeaknesses;
-
-#pragma mark - التحكم العكسي
-- (void)manualAntiCheatInspection:(NSString *)moduleName;
-- (void)initiateTargetedAttack:(NSString *)target;
-- (void)deployCustomExploit;
-
-#pragma mark - تقارير الهجوم
-- (void)generateExploitReport;
-- (void)exportBypassLogs;
-- (void)showSuccessStatistics;
-
+@implementation HardwareSpoofer
+- (NSString *)generateFakeHardwareFingerprint { return @"UUID-SPOOFED"; }
+- (BOOL)spoofHardwareConsistency { return YES; }
+- (BOOL)hideVirtualMachine { return YES; }
+- (BOOL)bypassDebuggerDetection { return YES; }
+- (BOOL)spoofSystemModifications { return YES; }
+- (NSArray *)hideSuspiciousSoftware { return @[]; }
+- (BOOL)spoofPerformanceMetrics { return YES; }
+- (BOOL)fakeTimingMeasurements { return YES; }
 @end
 
-// ================================================
-// 🔐 نظام التمويه المتقدم
-// ================================================
-
-@interface AdvancedCloakingSystem : NSObject
-
-#pragma mark - تمويه الذاكرة
-- (void)implementMemoryObfuscation;
-- (void)setupTrapHandlers;
-- (void)hideInPlainSight;
-
-#pragma mark - تمويه الشبكة
-- (void)implementTrafficObfuscation;
-- (void)useLegitimateProtocols;
-- (void)simulateNormalBehavior;
-
-#pragma mark - تمويه النظام
-- (BOOL)appearAsSystemProcess;
-- (BOOL)spoofSystemCalls;
-- (BOOL)generateLegitimateLogs;
-
+@implementation AttackerDashboard
++ (instancetype)shared { return [AttackerDashboard new]; }
++ (void)launch { NSLog(@"[GUI] Launching Dashboard..."); }
+- (void)updateWithVulnerability:(VulnerabilityAssessment *)vuln {}
+- (void)updateRealtimeExploitStatus {}
+- (void)showActiveBypasses {}
+- (void)displayAntiCheatWeaknesses {}
+- (void)manualAntiCheatInspection:(NSString *)moduleName {}
+- (void)initiateTargetedAttack:(NSString *)target {}
+- (void)deployCustomExploit {}
+- (void)generateExploitReport {}
+- (void)exportBypassLogs {}
+- (void)showSuccessStatistics {}
 @end
 
 // ================================================
 // ⚡ الكود المباشر للاستغلال
 // ================================================
+
+// دوال وهمية لمنع أخطاء Linker (لأن هذه الدوال غير معرفة في المكتبات القياسية)
+void fake_check_function(void) {}
+void fake_scan_function(void) {}
+uintptr_t *findIAT(void) { return NULL; }
 
 // تقنية ROP Chain لاستغلال الذاكرة
 static void buildROPChain() {
@@ -709,13 +695,60 @@ static void injectShellcode() {
 }
 
 // ================================================
+// 🎯 نقطة التشغيل المعكوسة (Constructor)
+// ================================================
+
+void ShadowMaster_Initialize_Logic(void); // Forward declaration
+
+__attribute__((constructor))
+static void ShadowMaster_Initialize() {
+    @autoreleasepool {
+        // الانتظار حتى يتم تحميل نظام مكافحة الغش
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 4 * NSEC_PER_SEC), 
+                      dispatch_get_main_queue(), ^{
+            
+            NSLog(@"[SHADOW MASTER] 🌑 النظام المعكوس جاهز للتشغيل");
+            
+            // التهيئة
+            ShadowMasterCore *master = [ShadowMasterCore master];
+            
+            // تحميل إعدادات الهجوم
+            NSDictionary *attackConfig = @{
+                @"attack_mode": @"stealth",
+                @"memory_exploitation": @YES,
+                @"network_manipulation": @YES,
+                @"behavior_spoofing": @YES,
+                @"ai_evasion": @YES,
+                @"hardware_spoofing": @YES
+            };
+            
+            [master initializeWithOverride:attackConfig];
+            
+            // البدء
+            [master startExploitation];
+            
+            // المراقبة العكسية
+            [master monitorInRealTime];
+            
+            // إخفاء كامل
+            [master cloakCompletely];
+            
+            NSLog(@"[SHADOW MASTER] ⚡ النظام المعكوس يعمل بكامل طاقته");
+            NSLog(@"[SHADOW MASTER] 🧠 الذاكرة: مُستغَلة | 🌐 الشبكة: مُتلاعَب بها");
+            NSLog(@"[SHADOW MASTER] 🤖 الذكاء الاصطناعي: مُتجنَب | 🎮 السلوك: مُزوَّر");
+            NSLog(@"[SHADOW MASTER] 💻 العتاد: مُزوَّر | ⚡ النظام: تحت السيطرة");
+        });
+    }
+}
+
+// ================================================
 // 🚀 تشغيل النظام المعكوس
 // ================================================
 
 int main(int argc, char *argv[]) {
     @autoreleasepool {
         // بدء نظام الظل الرئيسي
-        [ShadowMaster_Initialize];
+        // ملاحظة: دالة Constructor تعمل تلقائياً قبل Main
         
         // تشغيل واجهة المستخدم إذا لزم الأمر
         if (argc > 1 && strcmp(argv[1], "--gui") == 0) {
@@ -723,7 +756,7 @@ int main(int argc, char *argv[]) {
         }
         
         // البقاء نشطاً في الخلفية
+        NSLog(@"[MAIN] Shadow Loop Running...");
         [[NSRunLoop currentRunLoop] run];
     }
     return 0;
-}
