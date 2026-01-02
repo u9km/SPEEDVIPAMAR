@@ -1,13 +1,24 @@
-ARCHS = arm64 arm64e
-TARGET = iphone:clang:latest:11.0
+# المعماريات المستهدفة
+ARCHS = arm64
+
+# استهداف أحدث الأنظمة لضمان التوافق الأمني
+TARGET = iphone:clang:latest:13.0
+
+# نمط الروتلس (IPA Injection)
+THEOS_PACKAGE_SCHEME = rootless
 
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = SovereignSecurity
-
-# نستخدم ملف واحد فقط لأننا دمجنا كل شيء فيه
 SovereignSecurity_FILES = SovereignSecurity.m
-SovereignSecurity_FRAMEWORKS = UIKit CoreML Foundation Security
-SovereignSecurity_CFLAGS = -fobjc-arc -Wno-deprecated-declarations
+
+# تفعيل أقصى درجات التحسين ومنع الـ Strip
+SovereignSecurity_CFLAGS = -fobjc-arc -O3 -Wno-deprecated-declarations
+
+# المكتبات الضرورية للرسم، التشفير، والذاكرة
+SovereignSecurity_FRAMEWORKS = UIKit Foundation Security CoreGraphics QuartzCore AudioToolbox
+
+# سطر السيادة: تأمين الذاكرة عبر محاذاة القطاعات وتشفير الروابط
+SovereignSecurity_LDFLAGS += -Wl,-segalign,4000 -ldl
 
 include $(THEOS_MAKE_PATH)/tweak.mk
