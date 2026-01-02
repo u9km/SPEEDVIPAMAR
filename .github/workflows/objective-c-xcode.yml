@@ -1,40 +1,35 @@
-name: Build Sovereign V2300
+name: Build Sovereign V2300 Final
 
 on:
-  push:
-    branches: [ main, master ] # سيبدأ العمل تلقائياً عند الرفع على main أو master
-  workflow_dispatch: # يظهر لك زر "Run workflow" للتشغيل اليدوي
+  workflow_dispatch: # تشغيل يدوي
 
 jobs:
   build:
-    runs-on: macos-latest # ضروري لبيئة Xcode وTheos
+    runs-on: macos-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Theos Environment
+      - name: Setup Theos
         run: |
           sudo git clone --recursive https://github.com/theos/theos.git /opt/theos
           echo "THEOS=/opt/theos" >> $GITHUB_ENV
           
-      - name: Setup iOS SDK
+      - name: Setup iOS SDK (Corrected)
         run: |
-          # تحميل الـ SDK الضروري لبناء تويك الحماية
-          git clone https://github.com/theos/sdks.git $THEOS/sdks
+          # حذف المجلد إذا كان موجوداً لتجنب Error 128
+          sudo rm -rf /opt/theos/sdks
+          git clone https://github.com/theos/sdks.git /opt/theos/sdks
           
-      - name: Install Dependencies
+      - name: Build SovereignSecurity
         run: |
-          brew install ldid xz
-          
-      - name: Compiling SovereignSecurity
-        run: |
-          export THEOS=$THEOS
-          # تنظيف الملفات القديمة وبناء النسخة النهائية
+          export THEOS=/opt/theos
+          # بناء المشروع مع تجاهل التحذيرات البسيطة
           make clean all FINALPACKAGE=1
           
-      - name: Upload Artifacts
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign-Final-Build
-          path: .theos/obj/debug/*.dylib # استخراج ملف dylib المخصص للحقن
+          name: Sovereign-Dylib
+          path: .theos/obj/debug/*.dylib
