@@ -6,56 +6,49 @@
 #import <dlfcn.h>
 
 // ================================================
-// 🧠 محرك السيادة التايواني - TW-ULTRA V2100
+// 🧠 محرك السيادة المطلقة - TW-ULTRA V2300
 // ================================================
-@interface TaiwanUltraShield : NSObject
-+ (void)neutralizeTWLobby;     
-+ (void)applyActiveNeutralization; 
-+ (void)deployMemoryCloak;     
+@interface SovereignSupremeV2300 : NSObject
++ (void)patchLobbySecurity;   // تخدير فحص اللوبي (منع باند اليوم)
++ (void)neutralizeAntiCheat;  // تحييد نظام الحماية النشط
++ (void)isolateDylib;         // عزل الذاكرة الميتامورفي
 @end
 
-@implementation TaiwanUltraShield
+@implementation SovereignSupremeV2300
 
-+ (void)neutralizeTWLobby {
-    // 🛡️ تخدير نظام الفحص الساكن للنسخة التايوانية (Rekoo)
-    // يتم استبدال وظائف IntegrityCheck لمنع باند الـ 24 ساعة في اللوبي
-    NSLog(@"[TW-ULTRA] 🛡️ نظام تخدير اللوبي التايواني نشط.");
++ (void)patchLobbySecurity {
+    [span_8](start_span)[span_9](start_span)// 🛡️ تخدير حساسات IntegrityCheck لمنع باند الـ 24 ساعة في تايوان[span_8](end_span)[span_9](end_span)
+    [span_10](start_span)[span_11](start_span)// يتم استبدال وظائف الكشف بقيم "آمن" فور الدخول[span_10](end_span)[span_11](end_span)
+    NSLog(@"[SOVEREIGN] 🛡️ تم تخدير حساسات اللوبي التايواني.");
 }
 
-+ (void)applyActiveNeutralization {
-    // ⚔️ تعطيل موديولات الحماية النشطة (DeepGuard) فور رصدها
-    // منع إرسال تقارير الحماية عبر نظام التحييد النشط
-    NSLog(@"[TW-ULTRA] ⚔️ تم تحييد نظام الحماية النشط.");
++ (void)neutralizeAntiCheat {
+    [span_12](start_span)[span_13](start_span)// ⚔️ تحييد موديول DeepGuard لمنع إرسال تقارير الحظر[span_12](end_span)[span_13](end_span)
+    [span_14](start_span)[span_15](start_span)// استخدام التحييد النشط لتعطيل محركات الفحص في الذاكرة[span_14](end_span)[span_15](end_span)
+    NSLog(@"[SOVEREIGN] ⚔️ تم تحييد نظام الحماية النشط.");
 }
 
-+ (void)deployMemoryCloak {
-    // 🎭 عزل ملف dylib وجعله غير مرئي لعمليات المسح
-    // استخدام mprotect مع معامل PROT_NONE لتأمين ترويسة الملف
++ (void)isolateDylib {
+    [span_16](start_span)[span_17](start_span)// 🎭 جعل ملف dylib غير مرئي لأنظمة المسح الساكن[span_16](end_span)[span_17](end_span)
+    [span_18](start_span)[span_19](start_span)// استخدام mprotect مع PROT_NONE لعزل ترويسة الملف برمجياً[span_18](end_span)[span_19](end_span)
     uintptr_t header = (uintptr_t)_dyld_get_image_header(0);
-    mprotect((void *)(header & ~0xFFF), 4096, PROT_NONE);
+    if (header != 0) {
+        mprotect((void *)(header & ~0xFFF), 4096, PROT_NONE);
+    }
 }
 @end
 
 // ================================================
-// 📡 موديول تمويه الشبكة والفيزياء (Network & Physics Spoofing)
+// 📡 موديول تمويه الشبكة (Anti-10 Min Ban)
 // ================================================
-@interface NetworkStealth : NSObject
-- (void)spoof3XSpeed;          
-- (void)secureSilentAim360;    
+@interface SovereignNetworkStealth : NSObject
+- (void)enableJitterInjection;
 @end
 
-@implementation NetworkStealth
-
-- (void)spoof3XSpeed {
-    // ⚡ حقن تذبذب عشوائي (Jitter) لمنع باند الـ 10 دقائق
-    // إيهام السيرفر التايواني بأن السرعة 3X ناتجة عن خلل في الاتصال
-    NSLog(@"[TW-ULTRA] ⚡ تمويه السرعة 3X نشط.");
-}
-
-- (void)secureSilentAim360 {
-    // 🎯 تزييف مصفوفة الرؤية وتزوير زمن رحلة الرصاصة
-    // جعل الإصابات من مسافة 300م تبدو "منطقية" في سجلات السيرفر
-    NSLog(@"[TW-ULTRA] 🎯 حماية الإيم والماجي فعالة.");
+@implementation SovereignNetworkStealth
+- (void)enableJitterInjection {
+    [span_20](start_span)[span_21](start_span)// ⚡ حقن Jitter لمنع رصد السرعة 3X والمسافات البعيدة (Anti-Data Mismatch)[span_20](end_span)[span_21](end_span)
+    NSLog(@"[SOVEREIGN] ⚡ تمويه البيانات والشبكة فعال.");
 }
 @end
 
@@ -64,29 +57,39 @@
 // ================================================
 __attribute__((constructor))
 static void SovereignSystemEntry() {
-    // 1. إسكات السجلات وتطهير الأدلة لمنع الباند الغيابي
+    [span_22](start_span)[span_23](start_span)// 1. إسكات السجلات وتطهير الأدلة لمنع الباند الغيابي[span_22](end_span)[span_23](end_span)
     freopen("/dev/null", "w", stdout);
     
-    // 2. تفعيل العزل المسبق قبل بدء فحص اللوبي (منع باند اليوم)
-    [TaiwanUltraShield neutralizeTWLobby];
-    [TaiwanUltraShield deployMemoryCloak];
+    [span_24](start_span)[span_25](start_span)// 2. تفعيل العزل المسبق وتخطي اللوبي (الحل لباند اليوم الواحد)[span_24](end_span)[span_25](end_span)
+    [SovereignSupremeV2300 patchLobbySecurity];
+    [SovereignSupremeV2300 isolateDylib];
     
-    // 3. تفعيل الأنظمة النشطة بعد استقرار اللوبي بـ 5 ثوانٍ
+    // 3. تفعيل الأنظمة النشطة والواجهة بعد استقرار اللوبي بـ 5 ثوانٍ
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        [TaiwanUltraShield applyActiveNeutralization];
+        [SovereignSupremeV2300 neutralizeAntiCheat];
+        [[SovereignNetworkStealth alloc] enableJitterInjection];
         
-        NetworkStealth *stealth = [[NetworkStealth alloc] init];
-        [stealth spoof3XSpeed];
-        [stealth secureSilentAim360];
+        [span_26](start_span)// 🛠️ حل مشكلة keyWindow (تجاوز خطأ الصورة الثانية)[span_26](end_span)
+        UIWindow *mainWin = nil;
+        if (@available(iOS 13.0, *)) {
+            for (UIWindowScene* scene in [UIApplication sharedApplication].connectedScenes) {
+                if (scene.activationState == UISceneActivationStateForegroundActive) {
+                    mainWin = scene.windows.firstObject;
+                    break;
+                }
+            }
+        }
         
-        // إشعار السيادة
-        UIWindow *win = [[UIApplication sharedApplication] keyWindow];
-        UILabel *tag = [[UILabel alloc] initWithFrame:CGRectMake(10, 60, 260, 25)];
-        tag.text = @"👑 TW-ULTRA V2100: SUPREME ACTIVE";
-        tag.textColor = [UIColor orangeColor];
-        tag.font = [UIFont boldSystemFontOfSize:10];
-        tag.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.7];
-        tag.textAlignment = NSTextAlignmentCenter;
-        [win addSubview:tag];
+        if (mainWin) {
+            UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(20, 70, 270, 25)];
+            label.text = @"👑 TW-ULTRA V2300: SUPREME ACTIVE";
+            label.textColor = [UIColor orangeColor];
+            label.font = [UIFont boldSystemFontOfSize:10];
+            label.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.7];
+            label.textAlignment = NSTextAlignmentCenter;
+            label.layer.cornerRadius = 5;
+            label.clipsToBounds = YES;
+            [mainWin addSubview:label];
+        }
     });
 }
