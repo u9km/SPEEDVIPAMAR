@@ -1,13 +1,19 @@
-ARCHS = arm64
-TARGET = iphone:clang:latest:14.0
-THEOS_PACKAGE_SCHEME = rootless
+# اسم الأداة
+TWEAK_NAME = SovereignUltimate
+
+# الملفات المراد دمجها
+SovereignUltimate_FILES = Sovereign_Ultimate.mm
+SovereignUltimate_CFLAGS = -fobjc-arc -Wno-deprecated-declarations
+
+# المكتبات المطلوبة
+SovereignUltimate_FRAMEWORKS = UIKit Foundation QuartzCore
+
+# إعدادات المعالج (ARM64 ضروري لببجي)
+ARCHS = arm64 arm64e
+TARGET = iphone:clang:latest:13.0
 
 include $(THEOS)/makefiles/common.mk
-
-TWEAK_NAME = SovereignSecurity
-SovereignSecurity_FILES = SovereignSecurity.m
-SovereignSecurity_CFLAGS = -fobjc-arc -O3
-SovereignSecurity_FRAMEWORKS = UIKit Foundation Security CoreGraphics QuartzCore AudioToolbox
-SovereignSecurity_LDFLAGS += -Wl,-segalign,4000 -ldl
-
 include $(THEOS_MAKE_PATH)/tweak.mk
+
+after-install::
+	install.exec "killall -9 ShadowTrackerExtra" # إعادة تشغيل اللعبة تلقائياً
