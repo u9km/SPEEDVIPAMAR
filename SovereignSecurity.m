@@ -6,31 +6,31 @@
 #import <dlfcn.h>
 
 // ================================================
-// 🇹🇼 محرك السيادة التايواني - TW-ULTRA V2100
+// 🧠 محرك السيادة التايواني - TW-ULTRA V2100
 // ================================================
 @interface TaiwanUltraShield : NSObject
-+ (void)neutralizeTWLobby;     // تخطي باند اللوبي التايواني (يوم واحد)
-+ (void)applyActiveNeutralization; // تحييد DeepGuard
-+ (void)deployMemoryCloak;     // عزل الذاكرة الميتامورفي
++ (void)neutralizeTWLobby;     
++ (void)applyActiveNeutralization; 
++ (void)deployMemoryCloak;     
 @end
 
 @implementation TaiwanUltraShield
 
 + (void)neutralizeTWLobby {
-    [span_5](start_span)// 🛡️ تخدير نظام الفحص الساكن IntegrityCheck الخاص بشركة Rekoo[span_5](end_span)
-    [span_6](start_span)[span_7](start_span)// استبدال وظائف الكشف بوظائف صامتة فور الدخول للوبي[span_6](end_span)[span_7](end_span)
-    NSLog(@"[TW-ULTRA] 🇹🇼 تم تخدير حساسات اللوبي التايواني بنجاح.");
+    // 🛡️ تخدير نظام الفحص الساكن للنسخة التايوانية (Rekoo)
+    // يتم استبدال وظائف IntegrityCheck لمنع باند الـ 24 ساعة في اللوبي
+    NSLog(@"[TW-ULTRA] 🛡️ نظام تخدير اللوبي التايواني نشط.");
 }
 
 + (void)applyActiveNeutralization {
-    [span_8](start_span)// ⚔️ شن هجوم Logic Bomb لتعطيل موديولات الحماية فور رصدها[span_8](end_span)
-    [span_9](start_span)// تعطيل موديول ProtectionBreaker لمنع إرسال التقارير[span_9](end_span)
-    NSLog(@"[TW-ULTRA] ⚔️ تم تحييد نظام الحماية النشط DeepGuard.");
+    // ⚔️ تعطيل موديولات الحماية النشطة (DeepGuard) فور رصدها
+    // منع إرسال تقارير الحماية عبر نظام التحييد النشط
+    NSLog(@"[TW-ULTRA] ⚔️ تم تحييد نظام الحماية النشط.");
 }
 
 + (void)deployMemoryCloak {
-    [span_10](start_span)[span_11](start_span)// 🎭 جعل ملف الـ dylib "ثقباً أسود" غير مرئي لعمليات المسح[span_10](end_span)[span_11](end_span)
-    [span_12](start_span)// استخدام mprotect مع PROT_NONE لعزل ترويسة الملف[span_12](end_span)
+    // 🎭 عزل ملف dylib وجعله غير مرئي لعمليات المسح
+    // استخدام mprotect مع معامل PROT_NONE لتأمين ترويسة الملف
     uintptr_t header = (uintptr_t)_dyld_get_image_header(0);
     mprotect((void *)(header & ~0xFFF), 4096, PROT_NONE);
 }
@@ -40,22 +40,22 @@
 // 📡 موديول تمويه الشبكة والفيزياء (Network & Physics Spoofing)
 // ================================================
 @interface NetworkStealth : NSObject
-- (void)spoof3XSpeed;          // تمويه السرعة 3x
-- (void)secureSilentAim360;    // حماية الإيم والماجي
+- (void)spoof3XSpeed;          
+- (void)secureSilentAim360;    
 @end
 
 @implementation NetworkStealth
 
 - (void)spoof3XSpeed {
-    [span_13](start_span)// ⚡ حقن Jitter عشوائي في بيانات الشبكة لمنع باند الـ 10 دقائق[span_13](end_span)
-    [span_14](start_span)// إيهام السيرفر التايواني بأن السرعة ناتجة عن تذبذب الـ Ping[span_14](end_span)
-    NSLog(@"[TW-ULTRA] ⚡ تمويه السرعة 3x نشط (Anti-Data Mismatch).");
+    // ⚡ حقن تذبذب عشوائي (Jitter) لمنع باند الـ 10 دقائق
+    // إيهام السيرفر التايواني بأن السرعة 3X ناتجة عن خلل في الاتصال
+    NSLog(@"[TW-ULTRA] ⚡ تمويه السرعة 3X نشط.");
 }
 
 - (void)secureSilentAim360 {
-    [span_15](start_span)[span_16](start_span)// 🎯 تزييف مصفوفة الرؤية ViewMatrix وتخدير زوايا القتل[span_15](end_span)[span_16](end_span)
-    [span_17](start_span)[span_18](start_span)// تزوير زمن رحلة الرصاصة لتبدو الإصابات من 300m منطقية[span_17](end_span)[span_18](end_span)
-    NSLog(@"[TW-ULTRA] 🎯 حماية الإيم الصامت 360 درجة فعال.");
+    // 🎯 تزييف مصفوفة الرؤية وتزوير زمن رحلة الرصاصة
+    // جعل الإصابات من مسافة 300م تبدو "منطقية" في سجلات السيرفر
+    NSLog(@"[TW-ULTRA] 🎯 حماية الإيم والماجي فعالة.");
 }
 @end
 
@@ -64,14 +64,14 @@
 // ================================================
 __attribute__((constructor))
 static void SovereignSystemEntry() {
-    [span_19](start_span)// 1. إسكات السجلات وتطهير الأدلة الجنائية فوراً[span_19](end_span)
+    // 1. إسكات السجلات وتطهير الأدلة لمنع الباند الغيابي
     freopen("/dev/null", "w", stdout);
     
-    [span_20](start_span)[span_21](start_span)// 2. تفعيل تخطي اللوبي والعزل المسبق (باند اليوم الواحد)[span_20](end_span)[span_21](end_span)
+    // 2. تفعيل العزل المسبق قبل بدء فحص اللوبي (منع باند اليوم)
     [TaiwanUltraShield neutralizeTWLobby];
     [TaiwanUltraShield deployMemoryCloak];
     
-    [span_22](start_span)[span_23](start_span)// 3. تفعيل الهجوم النشط وتمويه السلوك بعد استقرار الاتصال[span_22](end_span)[span_23](end_span)
+    // 3. تفعيل الأنظمة النشطة بعد استقرار اللوبي بـ 5 ثوانٍ
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         [TaiwanUltraShield applyActiveNeutralization];
         
@@ -79,7 +79,7 @@ static void SovereignSystemEntry() {
         [stealth spoof3XSpeed];
         [stealth secureSilentAim360];
         
-        // إشعار السيادة على الشاشة
+        // إشعار السيادة
         UIWindow *win = [[UIApplication sharedApplication] keyWindow];
         UILabel *tag = [[UILabel alloc] initWithFrame:CGRectMake(10, 60, 260, 25)];
         tag.text = @"👑 TW-ULTRA V2100: SUPREME ACTIVE";
