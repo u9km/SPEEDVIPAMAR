@@ -1,7 +1,7 @@
-name: Build Sovereign V2300 Final
+name: Build Sovereign Pro Max
 
 on:
-  workflow_dispatch: # تشغيل يدوي
+  workflow_dispatch: # تشغيل يدوي لضمان الخصوصية
 
 jobs:
   build:
@@ -13,23 +13,23 @@ jobs:
 
       - name: Setup Theos
         run: |
-          sudo git clone --recursive https://github.com/theos/theos.git /opt/theos
-          echo "THEOS=/opt/theos" >> $GITHUB_ENV
+          # التثبيت في مجلد المستخدم لتجنب Permission denied
+          git clone --recursive https://github.com/theos/theos.git ~/theos
+          echo "THEOS=~/theos" >> $GITHUB_ENV
           
-      - name: Setup iOS SDK (Corrected)
+      - name: Setup iOS SDK
         run: |
-          # حذف المجلد إذا كان موجوداً لتجنب Error 128
-          sudo rm -rf /opt/theos/sdks
-          git clone https://github.com/theos/sdks.git /opt/theos/sdks
+          # تنظيف وتثبيت الـ SDK لضمان عدم وجود Error 128
+          rm -rf ~/theos/sdks
+          git clone https://github.com/theos/sdks.git ~/theos/sdks
           
       - name: Build SovereignSecurity
         run: |
-          export THEOS=/opt/theos
-          # بناء المشروع مع تجاهل التحذيرات البسيطة
+          export THEOS=~/theos
           make clean all FINALPACKAGE=1
           
-      - name: Upload Artifact
+      - name: Upload Sovereign Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign-Dylib
+          name: Sovereign-Pro-Max-V3.5
           path: .theos/obj/debug/*.dylib
