@@ -1,4 +1,4 @@
-name: Build Sovereign V15.0 (iPad Pro Edition)
+name: Build Sovereign V29.0 Final
 
 on:
   workflow_dispatch:
@@ -21,10 +21,10 @@ jobs:
           rm -rf ~/theos/sdks
           git clone https://github.com/theos/sdks.git ~/theos/sdks
           
-      - name: Install Missing Tools
-        run: brew install ldid xz # حل مشكلة Error 127 في صورك
+      - name: Install Missing ldid
+        run: brew install ldid xz # حل خطأ Error 127
           
-      - name: Build Apex V15.0
+      - name: Build Overlord Project
         run: |
           export THEOS=~/theos
           make clean all FINALPACKAGE=1
@@ -32,5 +32,5 @@ jobs:
       - name: Upload Sovereign Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign-Apex-V15-iPadPro
-          path: .theos/obj/debug/*.dylib
+          name: Sovereign-Apex-V29-Global
+          path: "**/*.dylib" # ضمان رفع الملف وحل مشكلة No files found
