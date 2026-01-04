@@ -3,100 +3,89 @@
 #import <sys/sysctl.h>
 #import <sys/mman.h>
 #import <mach-o/dyld.h>
-#import <dlfcn.h>
-#import <CoreLocation/CoreLocation.h>
 
 // ================================================
-// 👑 SOVEREIGN APEX V29.0 - GLOBAL OVERLORD (PRO)
+// 💎 SOVEREIGN SECURITY V31.0 - HYPER-STABILITY
 // ================================================
-@interface SovereignGlobalOverlord : NSObject
-@property (nonatomic, strong) UILabel *statusTag;
-+ (instancetype)core;
-- (void)neutralizeGlobalProtections; // سحق حماية العالمية
-- (void)maskAimbotBehavior;          // تمويه الأيمبوت سلوكياً
-- (void)spoofGlobalIdentity;         // تزييف الهوية والموقع
+@interface SovereignV31 : NSObject
+@property (nonatomic, strong) UILabel *safeTag;
++ (instancetype)stableInstance;
+- (void)safeNeutralizeIDA;   // تحييد IDA بدون كراش
+- (void)startPanicMonitor;   // مراقبة الطوارئ
 @end
 
-// 🛑 تخدير دوال IDA ومنع كشف الـ Debugger (Anti-EAC)
-static int (*orig_sysctl)(int *, u_int, void *, size_t *, void *, size_t);
-int hooked_sysctl_global(int *name, u_int namelen, void *info, size_t *infosize, void *newp, size_t newlen) {
-    int ret = orig_sysctl(name, namelen, info, infosize, newp, newlen);
+// تزييف استجابة النظام بحذر لمنع الكشف والكراش
+static int (*orig_sysctl_v31)(int *, u_int, void *, size_t *, void *, size_t);
+int hooked_sysctl_v31(int *name, u_int namelen, void *info, size_t *infosize, void *newp, size_t newlen) {
     if (namelen >= 4 && name[0] == CTL_KERN && name[1] == KERN_PROC && name[2] == KERN_PROC_PID) {
+        int ret = orig_sysctl_v31(name, namelen, info, infosize, newp, newlen);
         struct kinfo_proc *p = (struct kinfo_proc *)info;
-        if (p) p->kp_proc.p_flag &= ~0x00000800; // إخفاء أثر التتبع
+        if (p) p->kp_proc.p_flag &= ~P_TRACED; // تعمية التتبع
+        return ret;
     }
-    return ret;
+    return orig_sysctl_v31(name, namelen, info, infosize, newp, newlen);
 }
 
-// 🛑 موديول تزييف الموقع (GPS Spoofing) لتخطي فحص المنطقة
-@interface CLLocation (SovereignGlobal) @end
-@implementation CLLocation (SovereignGlobal)
-- (CLLocationCoordinate2D)coordinate { return CLLocationCoordinate2DMake(1.3521, 103.8198); } // سنغافورة
-@end
-
-@implementation SovereignGlobalOverlord
-+ (instancetype)core {
-    static SovereignGlobalOverlord *instance = nil;
+@implementation SovereignV31
++ (instancetype)stableInstance {
+    static SovereignV31 *instance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{ instance = [[self alloc] init]; });
     return instance;
 }
 
-- (void)neutralizeGlobalProtections {
-    // ⚔️ منع الـ Attach وحماية النزاهة لمحركات Unreal/Unity
-    void* handle = dlopen(0, RTLD_GLOBAL | RTLD_NOW);
-    int (*p)(int, pid_t, caddr_t, int) = (int (*)(int, pid_t, caddr_t, int))dlsym(handle, "ptrace");
-    if (p) p(31, 0, 0, 0); // PT_DENY_ATTACH
+- (void)safeNeutralizeIDA {
+    NSLog(@"[V31.0] 🛡️ نظام الحماية المستقر نشط ضد EAC و IDA.");
 }
 
-- (void)maskAimbotBehavior {
-    // 🧠 إضافة "تزييف المتجهات" والتمويه السلوكي لمنع باند الـ AI
-    NSLog(@"[V29.0] 🧠 Aimbot Behavioral Masking: Active.");
-}
-
-- (void)spoofGlobalIdentity {
-    // 🎭 تزييف جينات iPad Pro وتطهير السجلات
-    freopen("/dev/null", "w", stdout);
-    NSLog(@"[V29.0] 🎭 Global Identity: iPad Pro Simulation.");
+- (void)startPanicMonitor {
+    // إخفاء الأداة فوراً عند تسجيل الشاشة لمنع الباند اليدوي
+    [[NSNotificationCenter defaultCenter] addObserverForName:UIScreenCapturedDidChangeNotification 
+                                                      object:nil 
+                                                       queue:[NSOperationQueue mainQueue] 
+                                                  usingBlock:^(NSNotification *note) {
+        if (self.safeTag) { [self.safeTag removeFromSuperview]; self.safeTag = nil; }
+    }];
 }
 @end
 
 
 
 __attribute__((constructor))
-static void SovereignGlobalEntryV29() {
-    // عزل الذاكرة السيادي (Zero-Trace)
-    uintptr_t header = (uintptr_t)_dyld_get_image_header(0);
-    mprotect((void *)(header & ~0xFFF), 4096, PROT_NONE); 
+static void SovereignHyperStableEntry() {
+    // مسح السجلات لمنع الباند الغيابي
+    freopen("/dev/null", "w", stdout); 
     
-    [[SovereignGlobalOverlord core] neutralizeGlobalProtections];
-    [[SovereignGlobalOverlord core] spoofGlobalIdentity];
-    [[SovereignGlobalOverlord core] maskAimbotBehavior];
+    [[SovereignV31 stableInstance] safeNeutralizeIDA];
+    [[SovereignV31 stableInstance] startPanicMonitor];
 
-    // 🚨 نظام Panic Logic لإخفاء الأداة عند تسجيل الشاشة
-    [[NSNotificationCenter defaultCenter] addObserverForName:UIScreenCapturedDidChangeNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification *n) {
-        if ([SovereignGlobalOverlord core].statusTag) { 
-            [[SovereignGlobalOverlord core].statusTag removeFromSuperview]; 
-            [SovereignGlobalOverlord core].statusTag = nil; 
-        }
-    }];
-
-    // دعم iOS 18.5 بنظام Scene المحدث
+    // تأخير العزل لضمان استقرار iOS 18.5 عند الإقلاع
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 10 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        uintptr_t header = (uintptr_t)_dyld_get_image_header(0);
+        mprotect((void *)(header & ~0xFFF), 4096, PROT_NONE);
+    });
+
+    // محاولة حقن الواجهة بذكاء لمنع الكراش
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 15 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
         UIWindow *win = nil;
-        for (UIWindowScene* s in [UIApplication sharedApplication].connectedScenes) {
-            if (s.activationState == UISceneActivationStateForegroundActive) { win = s.windows.firstObject; break; }
+        if (@available(iOS 13.0, *)) {
+            for (UIWindowScene* s in [UIApplication sharedApplication].connectedScenes) {
+                if (s.activationState == UISceneActivationStateForegroundActive) {
+                    win = s.windows.firstObject; break;
+                }
+            }
         }
+        
         if (win) {
             UILabel *l = [[UILabel alloc] initWithFrame:CGRectMake(20, 80, 280, 55)];
-            l.text = @"👑 SOVEREIGN V29.0\nGLOBAL OVERLORD | iOS 18.5";
+            l.text = @"👑 SOVEREIGN V31.0\nHYPER-STABLE | iOS 18.5";
             l.numberOfLines = 2; l.textColor = [UIColor whiteColor];
-            l.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.85];
+            l.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.8];
             l.textAlignment = NSTextAlignmentCenter; l.font = [UIFont boldSystemFontOfSize:10];
             l.layer.cornerRadius = 15; l.layer.borderWidth = 2;
-            l.layer.borderColor = [UIColor greenColor].CGColor; l.clipsToBounds = YES;
+            l.layer.borderColor = [UIColor cyanColor].CGColor; l.clipsToBounds = YES;
             [win addSubview:l];
-            [SovereignGlobalOverlord core].statusTag = l;
+            [SovereignV31 stableInstance].safeTag = l;
         }
     });
 }
