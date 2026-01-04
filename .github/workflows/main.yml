@@ -1,7 +1,36 @@
-Injection_Settings:
-  - Framework_Linking: Dynamic
-  - Strip_Symbols: True               # مهم جداً لإخفاء اسم الهاك من الفحص
-  - Support_Rootless: True
-  - Optimization_Level: -Os            # لتقليل استهلاك البطارية والحرارة
-  - Signing_Entitlements: 
-      - com.apple.developer.team-identifier: YOUR_TEAM_ID
+name: Build Sovereign V15.0 (iPad Pro Edition)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Theos
+        run: |
+          git clone --recursive https://github.com/theos/theos.git ~/theos
+          echo "THEOS=~/theos" >> $GITHUB_ENV
+          
+      - name: Setup iOS SDK
+        run: |
+          rm -rf ~/theos/sdks
+          git clone https://github.com/theos/sdks.git ~/theos/sdks
+          
+      - name: Install Missing Tools
+        run: brew install ldid xz # حل مشكلة Error 127 في صورك
+          
+      - name: Build Apex V15.0
+        run: |
+          export THEOS=~/theos
+          make clean all FINALPACKAGE=1
+          
+      - name: Upload Sovereign Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sovereign-Apex-V15-iPadPro
+          path: .theos/obj/debug/*.dylib
