@@ -1,4 +1,4 @@
-name: Build Sovereign V29.0 Final
+name: Build Sovereign V30.0 (Final Fix)
 
 on:
   workflow_dispatch:
@@ -21,16 +21,24 @@ jobs:
           rm -rf ~/theos/sdks
           git clone https://github.com/theos/sdks.git ~/theos/sdks
           
-      - name: Install Missing ldid
-        run: brew install ldid xz # حل خطأ Error 127
+      - name: Install Dependencies
+        run: brew install ldid xz # لضمان توقيع الملف بنجاح
           
-      - name: Build Overlord Project
+      - name: Compile Sovereign V30.0
         run: |
           export THEOS=~/theos
           make clean all FINALPACKAGE=1
           
+      # الخطوة السحرية: كشف مكان الملف الفعلي لحل مشكلة No files found
+      - name: Debug Path (List Files)
+        run: |
+          echo "Listing all compiled files:"
+          find .theos/obj -name "*.dylib"
+          
       - name: Upload Sovereign Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign-Apex-V29-Global
-          path: "**/*.dylib" # ضمان رفع الملف وحل مشكلة No files found
+          name: Sovereign-Apex-V30-Fixed
+          # البحث في المسار العميق لـ Rootless لضمان إيجاد الملف
+          path: .theos/obj/**/*.dylib
+          if-no-files-found: error # سيعطيك تنبيهاً دقيقاً إذا فشل التجميع نفسه
