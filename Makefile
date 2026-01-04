@@ -6,10 +6,11 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = SovereignSecurity
 SovereignSecurity_FILES = SovereignSecurity.m
-SovereignSecurity_CFLAGS = -fobjc-arc -O3 -fvisibility=hidden # إخفاء الرموز لمنع IDA من قراءة الكود
-SovereignSecurity_FRAMEWORKS = UIKit Foundation Security CoreGraphics QuartzCore
+# تعمية الكود وإخفاء البصمة البرمجية تماماً
+SovereignSecurity_CFLAGS = -fobjc-arc -O3 -fvisibility=hidden 
+SovereignSecurity_FRAMEWORKS = UIKit Foundation Security CoreGraphics CoreLocation
 
-# تأمين الذاكرة وحماية SBC العميقة
+# تأمين قطاعات الذاكرة وحماية الكيرنال
 SovereignSecurity_LDFLAGS += -Wl,-segalign,4000 -ldl
 
 include $(THEOS_MAKE_PATH)/tweak.mk
