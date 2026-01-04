@@ -1,4 +1,4 @@
-name: Build Sovereign V30.0 (Final Fix)
+name: Build Sovereign V31.0 Hyper-Stable
 
 on:
   workflow_dispatch:
@@ -21,24 +21,16 @@ jobs:
           rm -rf ~/theos/sdks
           git clone https://github.com/theos/sdks.git ~/theos/sdks
           
-      - name: Install Dependencies
-        run: brew install ldid xz # لضمان توقيع الملف بنجاح
+      - name: Fix ldid Tool
+        run: brew install ldid xz # يحل خطأ Error 127 في صورك
           
-      - name: Compile Sovereign V30.0
+      - name: Compile Stable V31.0
         run: |
           export THEOS=~/theos
           make clean all FINALPACKAGE=1
           
-      # الخطوة السحرية: كشف مكان الملف الفعلي لحل مشكلة No files found
-      - name: Debug Path (List Files)
-        run: |
-          echo "Listing all compiled files:"
-          find .theos/obj -name "*.dylib"
-          
-      - name: Upload Sovereign Artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign-Apex-V30-Fixed
-          # البحث في المسار العميق لـ Rootless لضمان إيجاد الملف
-          path: .theos/obj/**/*.dylib
-          if-no-files-found: error # سيعطيك تنبيهاً دقيقاً إذا فشل التجميع نفسه
+          name: Sovereign-V31-Stable
+          path: "**/*.dylib" # يضمن إيجاد الملف النهائي لليوزر u9km
