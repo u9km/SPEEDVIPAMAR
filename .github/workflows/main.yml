@@ -1,4 +1,4 @@
-name: Build Sovereign Framework V37
+name: Sovereign Framework V37 (Fixed Path)
 
 on:
   push:
@@ -28,15 +28,14 @@ jobs:
       - name: Build Framework
         run: |
           export THEOS=~/theos
-          # بناء الإطار العمل
           make clean all FINALPACKAGE=1
           
-          echo "🔍 التحقق من وجود الـ Framework..."
+          echo "✅ تم البناء! جاري تحديد المسار..."
           ls -R .theos/obj/
-          
+
       - name: Upload Framework
         uses: actions/upload-artifact@v4
         with:
-          name: SovereignSecurity.framework
-          # رفع المجلد الناتج بالكامل
-          path: .theos/obj/debug/SovereignSecurity.framework
+          name: SovereignSecurity-Framework
+          # التغيير الجذري هنا: يبحث في أي مجلد فرعي عن الفريم ورك
+          path: .theos/obj/**/SovereignSecurity.framework
