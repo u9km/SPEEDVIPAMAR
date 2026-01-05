@@ -1,31 +1,47 @@
-name: Sovereign Auto-Build V36.0
+name: Sovereign V37 (Force Find)
 
 on:
   push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: macos-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
+          
       - name: Setup SDK
         run: |
           rm -rf ~/theos/sdks
           git clone https://github.com/theos/sdks.git ~/theos/sdks
+          
       - name: Install Tools
         run: brew install ldid xz
-      - name: Build
+
+      - name: Build and Debug
         run: |
           export THEOS=~/theos
-          make clean all FINALPACKAGE=1
-      - name: Upload Artifact
+          # بناء الحزمة مع إظهار كل التفاصيل
+          make clean all FINALPACKAGE=1 messages=yes
+          
+          echo "=============================="
+          echo "🔍 جاري البحث عن ملف الهاك..."
+          find . -type f -name "*.dylib"
+          echo "=============================="
+
+      - name: Upload EVERYTHING
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign-V36-NoCrash
-          path: "**/*.dylib"
+          name: Sovereign-All-Files
+          # سنرفع كل شيء تم إنتاجه لضمان وصول الملف لك
+          path: |
+            **/*.dylib
+            **/*.deb
+            .theos/obj/debug/
