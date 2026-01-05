@@ -1,4 +1,4 @@
-name: Build V49.3 Final Success
+name: Build V63.1 Global
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Signing Tools
+      - name: Install Tools
         run: brew install ldid xz
 
       - name: Setup Theos
@@ -18,13 +18,12 @@ jobs:
           git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
 
-      - name: Setup SDK
+      - name: Setup SDK (Fixed)
         run: |
-          # هذا هو سطر الإصلاح: نمسح المجلد الموجود مسبقاً لنحمل الجديد
           rm -rf ~/theos/sdks
           git clone https://github.com/theos/sdks.git ~/theos/sdks
 
-      - name: Build
+      - name: Build Global
         run: |
           export THEOS=~/theos
           make clean all FINALPACKAGE=1
@@ -32,5 +31,5 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: V49-Eclipse-Final
+          name: V63-Global-Protection
           path: .theos/obj/**/CoreAudioSupport.framework/
