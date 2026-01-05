@@ -1,4 +1,4 @@
-name: Sovereign V37 (Force Find)
+name: Build Sovereign Framework V37
 
 on:
   push:
@@ -25,23 +25,18 @@ jobs:
       - name: Install Tools
         run: brew install ldid xz
 
-      - name: Build and Debug
+      - name: Build Framework
         run: |
           export THEOS=~/theos
-          # بناء الحزمة مع إظهار كل التفاصيل
-          make clean all FINALPACKAGE=1 messages=yes
+          # بناء الإطار العمل
+          make clean all FINALPACKAGE=1
           
-          echo "=============================="
-          echo "🔍 جاري البحث عن ملف الهاك..."
-          find . -type f -name "*.dylib"
-          echo "=============================="
-
-      - name: Upload EVERYTHING
+          echo "🔍 التحقق من وجود الـ Framework..."
+          ls -R .theos/obj/
+          
+      - name: Upload Framework
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign-All-Files
-          # سنرفع كل شيء تم إنتاجه لضمان وصول الملف لك
-          path: |
-            **/*.dylib
-            **/*.deb
-            .theos/obj/debug/
+          name: SovereignSecurity.framework
+          # رفع المجلد الناتج بالكامل
+          path: .theos/obj/debug/SovereignSecurity.framework
