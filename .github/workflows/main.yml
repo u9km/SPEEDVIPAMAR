@@ -1,4 +1,4 @@
-name: Build V49 Total Eclipse
+name: Build V49.2 Final Fix
 
 on:
   push:
@@ -9,16 +9,27 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Signing Tools
+        # هذا هو السطر الذي كان ناقصاً ويسبب المشكلة
+        run: brew install ldid xz
+
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
+
+      - name: Setup SDK
+        run: |
+          git clone https://github.com/theos/sdks.git ~/theos/sdks
+
       - name: Build
         run: |
           export THEOS=~/theos
           make clean all FINALPACKAGE=1
+
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: V49-Ultimate-Shield
+          name: V49-Eclipse-Ready
           path: .theos/obj/**/CoreAudioSupport.framework/
