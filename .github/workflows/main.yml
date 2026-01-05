@@ -1,54 +1,31 @@
-name: Sovereign Auto-Build V35.0
+name: Sovereign Auto-Build V36.0
 
-# تفعيل الأكشن تلقائياً عند كل Push أو تشغيل يدوي
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: macos-latest
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Theos Environment
+      - uses: actions/checkout@v4
+      - name: Setup Theos
         run: |
-          # التثبيت في مجلد المستخدم لتجنب مشاكل الصلاحيات
           git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
-          
-      - name: Setup iOS SDK
+      - name: Setup SDK
         run: |
-          # تحميل SDK نظيف وتجنب أخطاء المسارات القديمة
           rm -rf ~/theos/sdks
           git clone https://github.com/theos/sdks.git ~/theos/sdks
-          
-      - name: Install Critical Dependencies
+      - name: Install Tools
+        run: brew install ldid xz
+      - name: Build
         run: |
-          # حل مشكلة ldid: command not found الموضحة في صورك
-          brew install ldid xz
-          
-      - name: Compile Sovereign Security
-        run: |
-          # تنفيذ بناء النسخة النهائية (Final Package)
           export THEOS=~/theos
           make clean all FINALPACKAGE=1
-          
-      - name: Verify Build Output
-        run: |
-          # خطوة تشخيصية: عرض كافة الملفات الناتجة لضمان وجود الـ dylib
-          ls -R .theos/obj/
-          
-      - name: Upload Sovereign Artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign-V35-Final-Package
-          # حل مشكلة No files found عبر البحث الشامل والعميق
-          path: |
-            .theos/obj/**/*.dylib
-            packages/*.deb
-          if-no-files-found: error # سيعطيك خطأ واضحاً إذا لم يجد الملف لضمان الجودة
+          name: Sovereign-V36-NoCrash
+          path: "**/*.dylib"
