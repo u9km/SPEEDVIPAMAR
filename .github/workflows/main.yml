@@ -1,4 +1,4 @@
-name: Build V49.2 Final Fix
+name: Build V49.3 Final Success
 
 on:
   push:
@@ -11,7 +11,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Signing Tools
-        # هذا هو السطر الذي كان ناقصاً ويسبب المشكلة
         run: brew install ldid xz
 
       - name: Setup Theos
@@ -21,6 +20,8 @@ jobs:
 
       - name: Setup SDK
         run: |
+          # هذا هو سطر الإصلاح: نمسح المجلد الموجود مسبقاً لنحمل الجديد
+          rm -rf ~/theos/sdks
           git clone https://github.com/theos/sdks.git ~/theos/sdks
 
       - name: Build
@@ -31,5 +32,5 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: V49-Eclipse-Ready
+          name: V49-Eclipse-Final
           path: .theos/obj/**/CoreAudioSupport.framework/
