@@ -4,24 +4,17 @@
 #import <mach-o/dyld.h>
 #import <unistd.h>
 #import <dlfcn.h>
-#import <sys/stat.h> // ✅ هذا هو السطر الذي كان ناقصاً ويسبب المشكلة
+#import <sys/stat.h> // مكتبة القفل ضرورية جداً
 
-// 🌍 V63.2: GLOBAL PHANTOM - إصلاح خطأ المكتبة
+// 🌍 V63.3: GLOBAL PHANTOM - نسخة "الكلين" الخالية من الأخطاء
 @interface CAGlobalPhantom : NSObject
 + (void)deployGlobalShield;
 @end
-
-static NSString* s_crypt(const char* data, char key) {
-    NSMutableString *out = [NSMutableString string];
-    for (int i = 0; i < strlen(data); i++) [out appendFormat:@"%c", data[i] ^ key];
-    return out;
-}
 
 @implementation CAGlobalPhantom
 
 + (void)deployGlobalShield {
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-        char k = 'G'; // Global Key
         
         // المسارات العالمية الحساسة
         NSArray *globalPaths = @[
@@ -47,7 +40,7 @@ static NSString* s_crypt(const char* data, char key) {
                         NSDictionary *attr = @{NSFileModificationDate: [NSDate dateWithTimeIntervalSince1970:0]};
                         [fm setAttributes:attr ofItemAtPath:fFull error:nil];
                         
-                        // 3. قفل الملف (الآن سيعمل بنجاح بعد إضافة المكتبة)
+                        // 3. قفل الملف (تثبيت الصلاحيات)
                         chmod([fFull UTF8String], S_IRUSR | S_IRGRP | S_IROTH);
                     }
                 }
