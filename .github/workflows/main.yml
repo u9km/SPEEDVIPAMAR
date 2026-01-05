@@ -1,4 +1,4 @@
-name: Build V42 Final Framework
+name: Build V49 Total Eclipse
 
 on:
   push:
@@ -8,35 +8,17 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Setup Theos
         run: |
           git clone --recursive https://github.com/theos/theos.git ~/theos
           echo "THEOS=~/theos" >> $GITHUB_ENV
-          
-      - name: Setup SDK
-        run: |
-          rm -rf ~/theos/sdks
-          git clone https://github.com/theos/sdks.git ~/theos/sdks
-          
-      - name: Install Tools
-        run: brew install ldid xz
-
       - name: Build
         run: |
           export THEOS=~/theos
           make clean all FINALPACKAGE=1
-          
-          # تأكيد المسار في السجلات
-          echo "🔍 القائمة الكاملة للملفات الناتجة:"
-          find .theos/obj -name "*.framework"
-
-      - name: Upload Framework Folder
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: CoreAudioSupport_Full_Framework
-          # التغيير الجوهري: نرفع المجلد بالكامل لضمان وجود Info.plist
+          name: V49-Ultimate-Shield
           path: .theos/obj/**/CoreAudioSupport.framework/
-          if-no-files-found: error
