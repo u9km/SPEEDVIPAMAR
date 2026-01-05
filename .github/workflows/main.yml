@@ -1,4 +1,4 @@
-name: Build Sovereign V31.0 Hyper-Stable
+name: Build Sovereign V35.0 (Corrected Path)
 
 on:
   workflow_dispatch:
@@ -21,16 +21,17 @@ jobs:
           rm -rf ~/theos/sdks
           git clone https://github.com/theos/sdks.git ~/theos/sdks
           
-      - name: Fix ldid Tool
-        run: brew install ldid xz # يحل خطأ Error 127 في صورك
+      - name: Install Dependencies
+        run: brew install ldid xz # يحل خطأ ldid المفقود
           
-      - name: Compile Stable V31.0
+      - name: Build Sovereign Security
         run: |
           export THEOS=~/theos
           make clean all FINALPACKAGE=1
           
-      - name: Upload Artifact
+      - name: Upload Sovereign Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Sovereign-V31-Stable
-          path: "**/*.dylib" # يضمن إيجاد الملف النهائي لليوزر u9km
+          name: Sovereign-Apex-V35-Fixed
+          # تصحيح المسار للبحث في كل المجلدات لضمان إيجاد dylib
+          path: "**/*.dylib" 
