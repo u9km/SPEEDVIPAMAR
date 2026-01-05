@@ -2,15 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>Filter</key>
-    <dict>
-        <key>Bundles</key>
-        <array>
-            <string>com.tencent.ig</string>
-            <string>com.pubg.korea</string>
-            <string>com.vng.pubgmobile</string>
-            <string>com.republiqc.pubg</string>
-        </array>
-    </dict>
+    <key>CFBundleExecutable</key>
+    <string>SovereignSecurity</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.sovereign.security</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundlePackageType</key>
+    <string>FMWK</string>
+    <key>CFBundleShortVersionString</key>
+    <string>37.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>MinimumOSVersion</key>
+    <string>14.0</string>
 </dict>
 </plist>
