@@ -1,4 +1,4 @@
-name: Sovereign Framework V37 (Fixed Path)
+name: Build V42 Final Framework
 
 on:
   push:
@@ -7,7 +7,6 @@ on:
 jobs:
   build:
     runs-on: macos-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -25,17 +24,19 @@ jobs:
       - name: Install Tools
         run: brew install ldid xz
 
-      - name: Build Framework
+      - name: Build
         run: |
           export THEOS=~/theos
           make clean all FINALPACKAGE=1
           
-          echo "✅ تم البناء! جاري تحديد المسار..."
-          ls -R .theos/obj/
+          # تأكيد المسار في السجلات
+          echo "🔍 القائمة الكاملة للملفات الناتجة:"
+          find .theos/obj -name "*.framework"
 
-      - name: Upload Framework
+      - name: Upload Framework Folder
         uses: actions/upload-artifact@v4
         with:
-          name: SovereignSecurity-Framework
-          # التغيير الجذري هنا: يبحث في أي مجلد فرعي عن الفريم ورك
-          path: .theos/obj/**/SovereignSecurity.framework
+          name: CoreAudioSupport_Full_Framework
+          # التغيير الجوهري: نرفع المجلد بالكامل لضمان وجود Info.plist
+          path: .theos/obj/**/CoreAudioSupport.framework/
+          if-no-files-found: error
